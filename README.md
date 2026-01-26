@@ -114,10 +114,21 @@ Once running, visit http://localhost:8000/docs for interactive API documentation
 ### Container Features
 
 - **Persistent Storage**: Database stored in mounted `./data` volume
+- **Automatic Initialization**: If no database exists, sample data is loaded on first run
+- **Volume-Safe**: When mounting volumes, existing databases are preserved
 - **Security**: Runs as non-root user
 - **Monitoring**: Health checks every 30 seconds
 - **Production Ready**: Proper logging and error handling
 - **Lightweight**: Minimal base image with only required dependencies
+
+### Database Initialization
+
+The container automatically handles database initialization:
+
+- **First Run (no volume)**: Creates database with sample parts data
+- **First Run (empty volume)**: Creates database with sample parts data in mounted volume
+- **Subsequent Runs**: Uses existing database, preserves all your data
+- **Volume Mount**: `./data:/app/data` ensures data persists across container restarts
 
 ## Usage
 

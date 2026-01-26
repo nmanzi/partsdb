@@ -7,6 +7,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -28,8 +29,9 @@ COPY --chown=app:app . .
 # Create directory for database
 RUN mkdir -p /app/data
 
-# Initialize database on first run
-RUN python init_db.py
+# Copy and set up entrypoint script
+COPY --chown=app:app docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose port
 EXPOSE 8000
@@ -39,4 +41,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/bins || exit 1
 
 # Run the application
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

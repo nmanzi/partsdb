@@ -14,8 +14,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Templates
 templates = Jinja2Templates(directory="templates")
 
-# Create database tables
-database.create_tables()
+# Note: Database tables are created by the entrypoint script
 
 # Dependency
 def get_db():
