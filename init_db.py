@@ -1,11 +1,14 @@
 """
 Script to initialize the database with sample data from StarterParts.md
 """
+import os
 from backend.database import SessionLocal, create_tables
 from backend import crud, schemas
 
 def init_database():
     """Initialize database with existing parts data"""
+    # Ensure data directory exists
+    os.makedirs("data", exist_ok=True)
     create_tables()
     
     db = SessionLocal()
