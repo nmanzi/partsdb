@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parts Inventory Management</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Parts Inventory Management</h1>
+            <nav>
+                <button id="view-parts" class="nav-btn active">Parts</button>
+                <button id="view-bins" class="nav-btn">Bins</button>
+                <button id="view-categories" class="nav-btn">Categories</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Search and Filter Section -->
+            <div class="toolbar">
+                <div class="search-section">
+                    <input type="text" id="search-input" placeholder="Search parts...">
+                    <button id="search-btn">Search</button>
+                    <button id="clear-search">Clear</button>
+                </div>
+                <div class="filter-section">
+                    <select id="bin-filter">
+                        <option value="">All Bins</option>
+                    </select>
+                    <select id="category-filter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div class="action-section">
+                    <button id="add-part" class="btn-primary">Add Part</button>
+                    <button id="add-bin" class="btn-secondary">Add Bin</button>
+                    <button id="add-category" class="btn-secondary">Add Category</button>
+                </div>
+            </div>
+
+            <!-- Parts View -->
+            <section id="parts-view" class="view active">
+                <h2>Parts Inventory</h2>
+                <div id="parts-list" class="grid-container">
+                    <!-- Parts will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Bins View -->
+            <section id="bins-view" class="view">
+                <h2>Storage Bins</h2>
+                <div id="bins-list" class="grid-container">
+                    <!-- Bins will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Categories View -->
+            <section id="categories-view" class="view">
+                <h2>Part Categories</h2>
+                <div id="categories-list" class="grid-container">
+                    <!-- Categories will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Add/Edit Forms -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body">
+                <!-- Form content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
