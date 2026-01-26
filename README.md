@@ -20,20 +20,26 @@ A Python webapp for managing inventory of electronic parts, cables, power suppli
 
 ## Setup
 
-### Option 1: Docker (Recommended)
+### Option 1: Pre-built Docker Image (GHCR)
 
-1. **Using Docker Compose**:
+1. **Pull and run from GitHub Container Registry**:
    ```bash
-   docker-compose up -d
+   docker run -p 8000:8000 -v $(pwd)/data:/app/data ghcr.io/nmanzi/partsdb:latest
    ```
 
-2. **Using Docker directly**:
-   ```bash
-   docker build -t parts-inventory .
-   docker run -p 8000:8000 -v $(pwd)/data:/app/data parts-inventory
+2. **Using Docker Compose with pre-built image**:
+   ```yaml
+   # docker-compose.prod.yml
+   version: '3.8'
+   services:
+     parts-inventory:
+       image: ghcr.io/nmanzi/partsdb:latest
+       ports:
+         - "8000:8000"
+       volumes:
+         - ./data:/app/data
+       restart: unless-stopped
    ```
-
-3. **Open in browser**: http://localhost:8000
 
 ### Option 2: Local Development
 
