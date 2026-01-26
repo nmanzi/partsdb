@@ -20,7 +20,30 @@ A Python webapp for managing inventory of electronic parts, cables, power suppli
 
 ## Setup
 
-1. **Clone or create project directory**
+### Option 1: Docker (Recommended)
+
+1. **Using Docker Compose**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Using Docker directly**:
+   ```bash
+   docker build -t parts-inventory .
+   docker run -p 8000:8000 -v $(pwd)/data:/app/data parts-inventory
+   ```
+
+3. **Open in browser**: http://localhost:8000
+
+### Option 2: Local Development
+
+1. **Create virtual environment**:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/Mac
+   # or .venv\Scripts\activate  # Windows
+   ```
+
 2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
@@ -57,10 +80,38 @@ Once running, visit http://localhost:8000/docs for interactive API documentation
 │       └── app.js      # Frontend logic
 ├── templates/
 │   └── index.html      # Main HTML template
-├── main.py             # FastAPI application
-├── init_db.py          # Database initialization
-└── requirements.txt    # Python dependencies
+├── data/              # Database storage (SQLite file)
+├── main.py            # FastAPI application
+├── init_db.py         # Database initialization
+├── requirements.txt   # Python dependencies
+├── Dockerfile         # Docker container config
+├── docker-compose.yml # Docker orchestration
+└── .dockerignore      # Docker build exclusions
 ```
+
+## Docker Deployment
+
+### Configuration Files
+
+- **Dockerfile**: Multi-stage build with security best practices
+  - Uses Python 3.11-slim base image
+  - Non-root user execution
+  - Automatic database initialization
+  - Health checks included
+
+- **docker-compose.yml**: Easy container orchestration
+  - Port mapping (8000:8000)
+  - Volume persistence for database
+  - Automatic restart on failure
+  - Environment variable configuration
+
+### Container Features
+
+- **Persistent Storage**: Database stored in mounted `./data` volume
+- **Security**: Runs as non-root user
+- **Monitoring**: Health checks every 30 seconds
+- **Production Ready**: Proper logging and error handling
+- **Lightweight**: Minimal base image with only required dependencies
 
 ## Usage
 
@@ -82,9 +133,30 @@ Once running, visit http://localhost:8000/docs for interactive API documentation
 
 ## Development
 
+### Local Development
 The app follows FastAPI best practices:
 - Async/await support
 - Automatic API documentation
 - Type hints with Pydantic
 - SQLAlchemy ORM with declarative models
 - Clean separation of concerns
+
+### Docker Development
+```bash
+# Build and run for development
+docker-compose up --build
+
+# View logs
+docker-compose logs -f parts-inventory
+
+# Stop containers
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up --build -d
+```
+
+### Database Management
+- **Local**: SQLite database in `./data/parts_inventory.db`
+- **Docker**: Mounted volume ensures persistence across container restarts
+- **Initialization**: Automatic setup with sample data from your existing inventory
