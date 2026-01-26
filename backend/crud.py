@@ -83,15 +83,27 @@ def get_parts(db: Session, skip: int = 0, limit: int = 100, bin_id: Optional[int
     return query.offset(skip).limit(limit).all()
 
 def search_parts(db: Session, search_term: str, skip: int = 0, limit: int = 100):
-    search_pattern = f"%{search_term}%"
-    return db.query(database.Part).filter(
-        database.Part.name.ilike(search_pattern) |
-        database.Part.description.ilike(search_pattern) |
-        database.Part.part_type.ilike(search_pattern) |
-        database.Part.specifications.ilike(search_pattern) |
-        database.Part.manufacturer.ilike(search_pattern) |
-        database.Part.model.ilike(search_pattern)
-    ).offset(skip).limit(limit).all()
+    if not search_term.strip():
+        return []
+    
+    # Split search term into individual words
+    search_words = [word.strip() for word in search_term.split() if word.strip()]
+    
+    query = db.query(database.Part)
+    
+    # For each word, ensure it appears in at least one field
+    for word in search_words:
+        word_pattern = f"%{word}%"
+        query = query.filter(
+            database.Part.name.ilike(word_pattern) |
+            database.Part.description.ilike(word_pattern) |
+            database.Part.part_type.ilike(word_pattern) |
+            database.Part.specifications.ilike(word_pattern) |
+            database.Part.manufacturer.ilike(word_pattern) |
+            database.Part.model.ilike(word_pattern)
+        )
+    
+    return query.offset(skip).limit(limit).all()
 
 def create_part(db: Session, part: schemas.PartCreate):
     db_part = database.Part(**part.dict())
