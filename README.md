@@ -121,15 +121,6 @@ Once running, visit http://localhost:8000/docs for interactive API documentation
 - **Production Ready**: Proper logging and error handling
 - **Lightweight**: Minimal base image with only required dependencies
 
-### Database Initialization
-
-The container automatically handles database initialization:
-
-- **First Run (no volume)**: Creates database with sample parts data
-- **First Run (empty volume)**: Creates database with sample parts data in mounted volume
-- **Subsequent Runs**: Uses existing database, preserves all your data
-- **Volume Mount**: `./data:/app/data` ensures data persists across container restarts
-
 ## Usage
 
 ### Managing Parts
@@ -147,6 +138,46 @@ The container automatically handles database initialization:
 - Switch to "Categories" view to organize part types
 - Create categories like "Power Supplies", "Cables", etc.
 - Parts can optionally be assigned to categories
+
+### CSV Import/Export
+The application supports bulk import and export of parts data via CSV files.
+
+#### Importing Parts from CSV
+Use the `/api/import/csv` endpoint to bulk import parts:
+
+**Expected CSV Format:**
+```csv
+name,description,quantity,part_type,specifications,manufacturer,model,bin_number,category_name
+Dell Power Supply,19.5V laptop adapter,2,Power Supply,19.5V 2.31A,Dell,,3,Power Supplies
+HDMI Cable,Standard HDMI cable,5,Cable,1.5m length,,,1,Cables
+Arduino Nano,Microcontroller board,10,Electronics,ATmega328P,Arduino,Nano,2,Electronics
+USB-C Cable,USB-A to USB-C cable,3,Cable,1.2m length,,,1,Cables
+Raspberry Pi 4,Single board computer,1,Electronics,4GB RAM Model B,Raspberry Pi Foundation,4B,2,Electronics
+```
+
+**CSV Column Descriptions:**
+- `name` (required): Part name/title
+- `description` (optional): Detailed description
+- `quantity` (optional): Number of items (defaults to 1)
+- `part_type` (optional): Type of part (Cable, Power Supply, etc.)
+- `specifications` (optional): Technical specifications
+- `manufacturer` (optional): Manufacturer name
+- `model` (optional): Model number/identifier
+- `bin_number` (required): Bin number where part is stored
+- `category_name` (optional): Category name for organization
+
+**Import Features:**
+- **Auto-creation**: Bins and categories are automatically created if they don't exist
+- **Validation**: Row-by-row error reporting with line numbers
+- **Flexible**: Only name and bin_number are required fields
+- **Safe**: Import errors don't affect valid rows
+
+#### Exporting Parts to CSV
+Use the `/api/export/csv` endpoint to download all parts data in CSV format. The export uses the same column structure as import, making it easy to:
+- Backup your inventory data
+- Share part lists with others
+- Prepare import templates
+- Migrate data between instances
 
 ## Development
 
@@ -172,8 +203,3 @@ docker-compose down
 # Rebuild after code changes
 docker-compose up --build -d
 ```
-
-### Database Management
-- **Local**: SQLite database in `./data/parts_inventory.db`
-- **Docker**: Mounted volume ensures persistence across container restarts
-- **Initialization**: Automatic setup with sample data from your existing inventory
