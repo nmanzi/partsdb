@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
-pydantic
+sqlmodel
 python-multipart
 jinja2
 aiofiles

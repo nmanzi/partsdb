@@ -14,7 +14,12 @@ ROOT = os.path.abspath(os.path.join(HERE, '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# Import SQLModel and all models to ensure they're registered
+from sqlmodel import SQLModel
 from backend import database as db
+
+# Import all models so they're registered with SQLModel metadata
+from backend.database import Bin, Category, Part
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,7 +33,7 @@ if config.config_file_name is not None:
 config.set_main_option('sqlalchemy.url', db.DATABASE_URL)
 
 # add your model's MetaData object here for 'autogenerate' support
-target_metadata = db.Base.metadata
+target_metadata = SQLModel.metadata
 
 
 def run_migrations_offline():

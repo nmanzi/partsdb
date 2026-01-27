@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 from typing import List, Optional
 import csv
 import io
-from backend import database, schemas, crud
+from backend import database, crud
 
 # Initialize FastAPI app
 app = FastAPI(title="Parts Inventory Management", version="1.0.0")
@@ -20,11 +20,8 @@ templates = Jinja2Templates(directory="templates")
 
 # Dependency
 def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    with Session(database.engine) as session:
+        yield session
 
 # Frontend routes
 @app.get("/")
@@ -32,28 +29,28 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 # API Routes - Bins
-@app.get("/api/bins", response_model=List[schemas.Bin])
+@app.get("/api/bins", response_model=List[database.BinRead])
 def read_bins(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     bins = crud.get_bins(db, skip=skip, limit=limit)
     return bins
 
-@app.post("/api/bins", response_model=schemas.Bin)
-def create_bin(bin: schemas.BinCreate, db: Session = Depends(get_db)):
+@app.post("/api/bins", response_model=database.BinRead)
+def create_bin(bin: database.BinCreate, db: Session = Depends(get_db)):
     # Check if bin number already exists
     db_bin = crud.get_bin_by_number(db, bin.number)
     if db_bin:
         raise HTTPException(status_code=400, detail="Bin number already exists")
     return crud.create_bin(db=db, bin=bin)
 
-@app.get("/api/bins/{bin_id}", response_model=schemas.BinWithParts)
+@app.get("/api/bins/{bin_id}", response_model=database.BinWithParts)
 def read_bin(bin_id: int, db: Session = Depends(get_db)):
     db_bin = crud.get_bin(db, bin_id=bin_id)
     if db_bin is None:
         raise HTTPException(status_code=404, detail="Bin not found")
     return db_bin
 
-@app.put("/api/bins/{bin_id}", response_model=schemas.Bin)
-def update_bin(bin_id: int, bin_update: schemas.BinUpdate, db: Session = Depends(get_db)):
+@app.put("/api/bins/{bin_id}", response_model=database.BinRead)
+def update_bin(bin_id: int, bin_update: database.BinUpdate, db: Session = Depends(get_db)):
     db_bin = crud.update_bin(db, bin_id=bin_id, bin_update=bin_update)
     if db_bin is None:
         raise HTTPException(status_code=404, detail="Bin not found")
@@ -67,28 +64,28 @@ def delete_bin(bin_id: int, db: Session = Depends(get_db)):
     return {"message": "Bin deleted successfully"}
 
 # API Routes - Categories
-@app.get("/api/categories", response_model=List[schemas.Category])
+@app.get("/api/categories", response_model=List[database.CategoryRead])
 def read_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     categories = crud.get_categories(db, skip=skip, limit=limit)
     return categories
 
-@app.post("/api/categories", response_model=schemas.Category)
-def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
+@app.post("/api/categories", response_model=database.CategoryRead)
+def create_category(category: database.CategoryCreate, db: Session = Depends(get_db)):
     # Check if category name already exists
     db_category = crud.get_category_by_name(db, category.name)
     if db_category:
         raise HTTPException(status_code=400, detail="Category name already exists")
     return crud.create_category(db=db, category=category)
 
-@app.get("/api/categories/{category_id}", response_model=schemas.CategoryWithParts)
+@app.get("/api/categories/{category_id}", response_model=database.CategoryWithParts)
 def read_category(category_id: int, db: Session = Depends(get_db)):
     db_category = crud.get_category(db, category_id=category_id)
     if db_category is None:
         raise HTTPException(status_code=404, detail="Category not found")
     return db_category
 
-@app.put("/api/categories/{category_id}", response_model=schemas.Category)
-def update_category(category_id: int, category_update: schemas.CategoryUpdate, db: Session = Depends(get_db)):
+@app.put("/api/categories/{category_id}", response_model=database.CategoryRead)
+def update_category(category_id: int, category_update: database.CategoryUpdate, db: Session = Depends(get_db)):
     db_category = crud.update_category(db, category_id=category_id, category_update=category_update)
     if db_category is None:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -102,7 +99,7 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     return {"message": "Category deleted successfully"}
 
 # API Routes - Parts
-@app.get("/api/parts", response_model=List[schemas.Part])
+@app.get("/api/parts", response_model=List[database.PartRead])
 def read_parts(skip: int = 0, limit: int = 100, bin_id: Optional[int] = None, 
                category_id: Optional[int] = None, search: Optional[str] = None, 
                db: Session = Depends(get_db)):
@@ -112,8 +109,8 @@ def read_parts(skip: int = 0, limit: int = 100, bin_id: Optional[int] = None,
         parts = crud.get_parts(db, skip=skip, limit=limit, bin_id=bin_id, category_id=category_id)
     return parts
 
-@app.post("/api/parts", response_model=schemas.Part)
-def create_part(part: schemas.PartCreate, db: Session = Depends(get_db)):
+@app.post("/api/parts", response_model=database.PartRead)
+def create_part(part: database.PartCreate, db: Session = Depends(get_db)):
     # Verify bin exists
     db_bin = crud.get_bin(db, part.bin_id)
     if not db_bin:
@@ -127,15 +124,15 @@ def create_part(part: schemas.PartCreate, db: Session = Depends(get_db)):
     
     return crud.create_part(db=db, part=part)
 
-@app.get("/api/parts/{part_id}", response_model=schemas.Part)
+@app.get("/api/parts/{part_id}", response_model=database.PartRead)
 def read_part(part_id: int, db: Session = Depends(get_db)):
     db_part = crud.get_part(db, part_id=part_id)
     if db_part is None:
         raise HTTPException(status_code=404, detail="Part not found")
     return db_part
 
-@app.put("/api/parts/{part_id}", response_model=schemas.Part)
-def update_part(part_id: int, part_update: schemas.PartUpdate, db: Session = Depends(get_db)):
+@app.put("/api/parts/{part_id}", response_model=database.PartRead)
+def update_part(part_id: int, part_update: database.PartUpdate, db: Session = Depends(get_db)):
     # Verify bin exists if provided
     if part_update.bin_id:
         db_bin = crud.get_bin(db, part_update.bin_id)
@@ -193,7 +190,7 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                 db_bin = crud.get_bin_by_number(db, bin_number)
                 if not db_bin:
                     # Create bin with basic info
-                    bin_create = schemas.BinCreate(
+                    bin_create = database.BinCreate(
                         number=bin_number,
                         name=f"Bin {bin_number}",
                         description=f"Auto-created bin {bin_number}"
@@ -206,7 +203,7 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                 if category_name:
                     db_category = crud.get_category_by_name(db, category_name)
                     if not db_category:
-                        category_create = schemas.CategoryCreate(
+                        category_create = database.CategoryCreate(
                             name=category_name,
                             description=f"Auto-created category {category_name}"
                         )
@@ -214,7 +211,7 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                     category_id = db_category.id
                 
                 # Create part
-                part_data = schemas.PartCreate(
+                part_data = database.PartCreate(
                     name=row.get('name', '').strip(),
                     description=row.get('description', '').strip() or None,
                     quantity=int(row.get('quantity', 1)),

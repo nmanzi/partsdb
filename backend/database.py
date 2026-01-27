@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlmodel import SQLModel, Field, Relationship, create_engine, Session
+from typing import Optional, List
 from datetime import datetime
 import os
 
@@ -10,61 +9,112 @@ os.makedirs("data", exist_ok=True)
 DATABASE_URL = "sqlite:///./data/parts_inventory.db"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
-class Bin(Base):
+# SQLModel models that work both as database models and API schemas
+class BinBase(SQLModel):
+    number: int = Field(unique=True, index=True)
+    name: Optional[str] = Field(default=None, max_length=100)
+    description: Optional[str] = Field(default=None)
+    location: Optional[str] = Field(default=None, max_length=200)
+
+class Bin(BinBase, table=True):
     __tablename__ = "bins"
     
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer, unique=True, index=True, nullable=False)
-    name = Column(String(100), nullable=True)
-    description = Column(Text, nullable=True)
-    location = Column(String(200), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationship to parts
-    parts = relationship("Part", back_populates="bin")
+    parts: List["Part"] = Relationship(back_populates="bin")
 
-class Category(Base):
+class BinCreate(BinBase):
+    pass
+
+class BinUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+
+class BinRead(BinBase):
+    id: int
+    created_at: datetime
+
+class CategoryBase(SQLModel):
+    name: str = Field(max_length=100, unique=True, index=True)
+    description: Optional[str] = Field(default=None)
+
+class Category(CategoryBase, table=True):
     __tablename__ = "categories"
     
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, index=True, nullable=False)
-    description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationship to parts
-    parts = relationship("Part", back_populates="category")
+    parts: List["Part"] = Relationship(back_populates="category")
 
-class Part(Base):
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class CategoryRead(CategoryBase):
+    id: int
+    created_at: datetime
+
+class PartBase(SQLModel):
+    name: str = Field(max_length=200, index=True)
+    description: Optional[str] = Field(default=None)
+    quantity: int = Field(default=1)
+    part_type: Optional[str] = Field(default=None, max_length=100)
+    specifications: Optional[str] = Field(default=None)
+    manufacturer: Optional[str] = Field(default=None, max_length=100)
+    model: Optional[str] = Field(default=None, max_length=100)
+    bin_id: int = Field(foreign_key="bins.id")
+    category_id: Optional[int] = Field(default=None, foreign_key="categories.id")
+
+class Part(PartBase, table=True):
     __tablename__ = "parts"
     
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(200), nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    quantity = Column(Integer, default=1)
-    part_type = Column(String(100), nullable=True)  # cable, power supply, adapter, etc.
-    specifications = Column(Text, nullable=True)  # voltage, current, length, etc.
-    manufacturer = Column(String(100), nullable=True)
-    model = Column(String(100), nullable=True)
-    bin_id = Column(Integer, ForeignKey("bins.id"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationships
-    bin = relationship("Bin", back_populates="parts")
-    category = relationship("Category", back_populates="parts")
+    bin: Bin = Relationship(back_populates="parts")
+    category: Optional[Category] = Relationship(back_populates="parts")
 
-def create_tables():
-    """Create all tables in the database"""
-    Base.metadata.create_all(bind=engine)
+class PartCreate(PartBase):
+    pass
 
-def get_db():
-    """Dependency to get database session"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class PartUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    quantity: Optional[int] = None
+    part_type: Optional[str] = None
+    specifications: Optional[str] = None
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    bin_id: Optional[int] = None
+    category_id: Optional[int] = None
+
+class PartRead(PartBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    bin: BinRead
+    category: Optional[CategoryRead] = None
+
+# Response schemas with relationships
+class BinWithParts(BinRead):
+    parts: List[PartRead] = []
+
+class CategoryWithParts(CategoryRead):
+    parts: List[PartRead] = []
+
+def create_db_and_tables():
+    """Create database tables"""
+    SQLModel.metadata.create_all(engine)
+
+# Note: updated_at field needs to be handled in the CRUD operations
+# SQLModel doesn't have automatic onupdate like SQLAlchemy's Column
