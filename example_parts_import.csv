@@ -1,0 +1,49 @@
+name,description,quantity,part_type,specifications,manufacturer,model,bin_number,category_name
+Dell 19.5v 2.31a DC power supply,DC power supply with barrel jack,2,Power Supply,19.5V 2.31A with barrel jack,Dell,,3,Power Supplies
+UBTECH DVE DC switching power supply,DC switching power supply,1,Power Supply,9.6V 2A with barrel jack,UBTECH,DVE,3,Power Supplies
+5V 2A DC switching power supply,DC power supply with barrel jack,1,Power Supply,5V 2A with barrel jack,,,3,Power Supplies
+6V 0.3A DC power supply,DC power supply with barrel jack,1,Power Supply,6V 0.3A with barrel jack,,,3,Power Supplies
+12V 0.5A DC power supply,DC power supply with barrel jack,1,Power Supply,12V 0.5A with barrel jack,,,3,Power Supplies
+5V 0.7A DC power supply,DC power supply with USB micro jack,1,Power Supply,5V 0.7A with USB micro jack,,,3,Power Supplies
+Nintendo DS Lite AC adapter,Nintendo DS Lite AC adapter,1,Power Supply,USG-002,Nintendo,USG-002,3,Power Supplies
+5V 4A DC power supply,DC power supply with barrel jack,1,Power Supply,5V 4A with barrel jack,,,3,Power Supplies
+Lenovo 65W USB-C power supply,65W USB-C power supply,2,Power Supply,65W USB-C,Lenovo,,3,Power Supplies
+5V 1A DC power supply for AV2HDMI,DC power supply with USB mini jack,1,Power Supply,5V 1A with USB mini jack for Digitech AV2HDMI RCA to HDMI converter,,,3,Power Supplies
+USB-C multi-voltage power supply,Multi-voltage USB-C power supply,1,Power Supply,5V 3A / 9V 2A / 12V 1.5A USB-C,,,3,Power Supplies
+Adjustable DC power supply,Adjustable DC power supply with barrel jack,1,Power Supply,3VDC-12VDC adjustable with barrel jack,,,3,Power Supplies
+USB 3.0 Type A to Type B cable,USB 3.0 cable,1,Cable,1.5m length,,,1,Cables
+HDMI to HDMI cable,HDMI cable,3,Cable,1.5m length,,,1,Cables
+USB-A to USB Micro cable,USB cable,1,Cable,1.5m length,,,1,Cables
+USB-A to USB-C cable,Short USB-C cable,1,Cable,15cm length,,,1,Cables
+USB-A to USB-C cable,Standard USB-C cable,3,Cable,1.2m length,,,1,Cables
+USB-A to USB-C cable,Long USB-C cable,1,Cable,3m length,,,1,Cables
+VGA to VGA cable,VGA cable,1,Cable,1.8m length,,,1,Cables
+USB-A to USB-C cable,Short USB-C cable,1,Cable,50cm length,,,1,Cables
+C13 10A to GPO 10A power cable,Power cable,1,Cable,1.5m length,,,1,Cables
+USB-A to USB Micro cable,USB Micro cable,2,Cable,1m length,,,1,Cables
+Figure-8 to GPO power cable,Power cable,1,Cable,1.5m 10A,,,1,Cables
+Apple Mini DisplayPort to DVI adapter,Video adapter,1,Adapter,Mini DisplayPort to DVI,Apple,,1,Adapters
+Jaybird USB-A Charging Cable,Charging cable,1,Cable,Jaybird brand,Jaybird,,1,Cables
+PSU modular cables bundle,Bundle of PSU cables,1,Cable,Bundle of PSU cables for modular power supplies,,,1,Cables
+SATA Cables,SATA data cables,2,Cable,SATA data cables,,,1,Cables
+USB-A to USB Mini cable,USB Mini cable,1,Cable,30cm length,,,1,Cables
+Digitech AV2HDMI RCA to HDMI converter,RCA to HDMI converter,1,Converter,RCA to HDMI converter,Digitech,AV2HDMI,2,Adapters
+Vivitar DVR 1080p HDMI to USB video capture,Video capture device,1,Capture Device,1080p HDMI to USB video capture device,Vivitar,DVR,2,Electronics
+DWA-192 AC1200 Dual Band Wireless USB Adapter,Wireless USB adapter,1,Network Adapter,AC1200 Dual Band Wireless,D-Link,DWA-192,2,Electronics
+Maycar Arduboy,Handheld gaming device,1,Gaming Device,Handheld gaming device,Maycar,Arduboy,2,Electronics
+1-Port PCI Express Gigabit Network Card,Network card,1,Network Card,PCI Express Gigabit Ethernet,,,2,Electronics
+3.5 HDD Cage for be quiet! case,HDD mounting cage,1,PC Component,3.5 inch HDD mounting cage,be quiet!,,2,Electronics
+PCI Slot Covers,PCI slot covers,2,PC Component,Standard PCI slot covers,,,2,Electronics
+Elastic straps,Bag of elastic straps,1,Accessory,Bag of elastic straps various sizes,,,4,3D Printing
+Creality K1 Max Spool Holder,3D printer spool holder,1,3D Printer Part,Spool holder for K1 Max,Creality,K1 Max,4,3D Printing
+JST Connector Kit,Connector kit,1,Connector,JST connector kit,,,4,Electronics
+PTFE Tubing offcuts,PTFE tubing offcuts,1,3D Printer Part,Bag of PTFE tubing offcuts,,,4,3D Printing
+Cleaning Filament,3D printer cleaning filament,1,3D Printer Part,Bag of cleaning filament,,,4,3D Printing
+Filament Vacuum Bags,Vacuum storage bags,30,Storage,Vacuum storage bags for filament,,,4,3D Printing
+Vacuum Bag Pump,Vacuum pump,1,Tool,Pump for vacuum storage bags,,,4,3D Printing
+3D Printer Nozzle Cleaning Needles,Cleaning needles,10,Tool,Cleaning needles for 3D printer nozzles,,,4,3D Printing
+Metal Grease,Lubricant grease,1,Lubricant,Tube of metal grease,,,4,3D Printing
+Creality Unicorn Nozzle,3D printer nozzle,1,3D Printer Part,0.4mm nozzle,Creality,Unicorn 0.4mm,4,3D Printing
+Creality Manual Bed Leveling Kit,Bed leveling kit,1,3D Printer Part,Manual bed leveling kit,Creality,,4,3D Printing
+Bed Leveling Feet,Bed leveling hardware,8,3D Printer Part,Adjustable bed leveling feet,,,4,3D Printing
+Creality K1 Max Original Hotend Assembly,3D printer hotend,1,3D Printer Part,Original hotend assembly,Creality,K1 Max,4,3D Printing
