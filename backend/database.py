@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship, create_engine, Session
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 # Ensure data directory exists
@@ -21,7 +21,7 @@ class Bin(BinBase, table=True):
     __tablename__ = "bins"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Relationship to parts
     parts: List["Part"] = Relationship(back_populates="bin")
@@ -46,7 +46,7 @@ class Category(CategoryBase, table=True):
     __tablename__ = "categories"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Relationship to parts
     parts: List["Part"] = Relationship(back_populates="category")
@@ -77,8 +77,8 @@ class Part(PartBase, table=True):
     __tablename__ = "parts"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Relationships
     bin: Bin = Relationship(back_populates="parts")
