@@ -49,6 +49,194 @@ nav {
     transition: all 0.3s ease;
 }
 
+/* Flash Messages */
+.flash-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+.flash-message {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.flash-message.success {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+.flash-message.error {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+}
+
+.flash-message.warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+}
+
+.flash-message.info {
+    background-color: #cce7ff;
+    border-left: 4px solid #007bff;
+    color: #004085;
+}
+
+.flash-message .flash-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.flash-message .flash-text {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.flash-message .flash-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flash-message .flash-close:hover {
+    opacity: 1;
+}
+
+.flash-message .flash-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: rgba(0,0,0,0.2);
+    animation: progress 5s linear;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes progress {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+
+.flash-message.slide-out {
+    animation: slideOut 0.3s ease-in;
+}
+
+/* Confirmation Modal */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.confirm-modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.confirm-modal h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.confirm-modal p {
+    margin-bottom: 25px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.confirm-modal .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm-modal button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    min-width: 80px;
+    transition: all 0.2s ease;
+}
+
+.confirm-modal .btn-confirm {
+    background-color: #dc3545;
+    color: white;
+}
+
+.confirm-modal .btn-confirm:hover {
+    background-color: #c82333;
+}
+
+.confirm-modal .btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.confirm-modal .btn-cancel:hover {
+    background-color: #5a6268;
+}
+
 .nav-btn.active, .nav-btn:hover {
     background: #3498db;
     color: white;

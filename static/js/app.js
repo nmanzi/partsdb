@@ -532,41 +532,50 @@ function editCategory(categoryId) {
 
 // Delete functions (called from HTML)
 async function deletePart(partId) {
-    if (confirm('Are you sure you want to delete this part?')) {
-        try {
-            await API.deletePart(partId);
-            showSuccess('Part deleted successfully');
-            loadParts();
-        } catch (error) {
-            showError('Failed to delete part: ' + error.message);
+    showConfirmModal(
+        'Are you sure you want to delete this part? This action cannot be undone.',
+        async () => {
+            try {
+                await API.deletePart(partId);
+                showSuccess('Part deleted successfully');
+                loadParts();
+            } catch (error) {
+                showError('Failed to delete part: ' + error.message);
+            }
         }
-    }
+    );
 }
 
 async function deleteBin(binId) {
-    if (confirm('Are you sure you want to delete this bin? This will also delete all parts in this bin.')) {
-        try {
-            await API.deleteBin(binId);
-            showSuccess('Bin deleted successfully');
-            loadBins();
-            populateFilters();
-        } catch (error) {
-            showError('Failed to delete bin: ' + error.message);
+    showConfirmModal(
+        'Are you sure you want to delete this bin? This will also delete all parts in this bin. This action cannot be undone.',
+        async () => {
+            try {
+                await API.deleteBin(binId);
+                showSuccess('Bin deleted successfully');
+                loadBins();
+                populateFilters();
+            } catch (error) {
+                showError('Failed to delete bin: ' + error.message);
+            }
         }
-    }
+    );
 }
 
 async function deleteCategory(categoryId) {
-    if (confirm('Are you sure you want to delete this category?')) {
-        try {
-            await API.deleteCategory(categoryId);
-            showSuccess('Category deleted successfully');
-            loadCategories();
-            populateFilters();
-        } catch (error) {
-            showError('Failed to delete category: ' + error.message);
+    showConfirmModal(
+        'Are you sure you want to delete this category? This action cannot be undone.',
+        async () => {
+            try {
+                await API.deleteCategory(categoryId);
+                showSuccess('Category deleted successfully');
+                loadCategories();
+                populateFilters();
+            } catch (error) {
+                showError('Failed to delete category: ' + error.message);
+            }
         }
-    }
+    );
 }
 
 // Utility functions
@@ -578,8 +587,57 @@ function escapeHtml(text) {
 }
 
 function showSuccess(message) {
-    // Simple success message - could be enhanced with a toast library
-    alert('✅ ' + message);
+    showFlashMessage(message, 'success');
+}
+
+function showFlashMessage(message, type = 'info', duration = 5000) {
+    const container = document.getElementById('flash-messages');
+    const flashMessage = document.createElement('div');
+    flashMessage.className = `flash-message ${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    flashMessage.innerHTML = `
+        <span class="flash-icon">${icons[type] || icons.info}</span>
+        <span class="flash-text">${message}</span>
+        <button class="flash-close">×</button>
+        <div class="flash-progress"></div>
+    `;
+    
+    container.appendChild(flashMessage);
+    
+    // Auto-remove after duration
+    const timer = setTimeout(() => {
+        removeFlashMessage(flashMessage);
+    }, duration);
+    
+    // Click to dismiss
+    flashMessage.addEventListener('click', () => {
+        clearTimeout(timer);
+        removeFlashMessage(flashMessage);
+    });
+    
+    // Close button
+    const closeBtn = flashMessage.querySelector('.flash-close');
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearTimeout(timer);
+        removeFlashMessage(flashMessage);
+    });
+}
+
+function removeFlashMessage(flashMessage) {
+    flashMessage.classList.add('slide-out');
+    setTimeout(() => {
+        if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+        }
+    }, 300);
 }
 
 // CSV Import/Export functions
@@ -592,7 +650,7 @@ async function handleCSVImport(event) {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith('.csv')) {
-        alert('❌ Please select a CSV file');
+        showError('Please select a CSV file');
         return;
     }
 
@@ -602,20 +660,24 @@ async function handleCSVImport(event) {
         
         hideLoading();
         
-        // Show results
-        let message = result.message;
+        // Show results with appropriate message type
         if (result.errors && result.errors.length > 0) {
-            message += '\n\nErrors encountered:\n' + result.errors.join('\n');
-        }
-        
-        if (result.created_parts && result.created_parts.length > 0) {
-            message += '\n\nSuccessfully imported:\n' + result.created_parts.slice(0, 10).join('\n');
-            if (result.created_parts.length > 10) {
-                message += `\n... and ${result.created_parts.length - 10} more`;
+            // Show warning for partial import
+            let message = result.message;
+            if (result.errors.length <= 3) {
+                message += '\n\nErrors encountered:\n' + result.errors.join('\n');
+            } else {
+                message += `\n\n${result.errors.length} errors encountered. First few:\n` + result.errors.slice(0, 3).join('\n');
             }
+            showFlashMessage(message, 'warning', 10000);
+        } else {
+            // Show success for complete import
+            let message = result.message;
+            if (result.created_parts && result.created_parts.length > 0) {
+                message += ` (${result.created_parts.length} parts imported)`;
+            }
+            showSuccess(message);
         }
-        
-        alert('📊 ' + message);
         
         // Refresh the current view if we're on parts
         if (currentView === 'parts') {
@@ -627,7 +689,7 @@ async function handleCSVImport(event) {
         
     } catch (error) {
         hideLoading();
-        alert('❌ Import failed: ' + error.message);
+        showError('Import failed: ' + error.message);
     }
 }
 
@@ -651,7 +713,7 @@ async function exportCSV() {
         
     } catch (error) {
         hideLoading();
-        alert('❌ Export failed: ' + error.message);
+        showError('Export failed: ' + error.message);
     }
 }
 
@@ -671,6 +733,62 @@ function hideLoading() {
 }
 
 function showError(message) {
-    // Simple error message - could be enhanced with a toast library
-    alert('❌ ' + message);
+    showFlashMessage(message, 'error', 8000); // Show errors longer
+}
+
+// Custom confirmation modal
+function showConfirmModal(message, onConfirm, onCancel = null) {
+    // Create modal if it doesn't exist
+    let confirmModal = document.getElementById('confirm-modal');
+    if (!confirmModal) {
+        confirmModal = document.createElement('div');
+        confirmModal.id = 'confirm-modal';
+        confirmModal.className = 'confirm-modal';
+        confirmModal.innerHTML = `
+            <div class="confirm-modal-content">
+                <h3>Confirm Action</h3>
+                <p id="confirm-message"></p>
+                <div class="button-group">
+                    <button id="confirm-yes" class="btn-confirm">Yes</button>
+                    <button id="confirm-no" class="btn-cancel">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(confirmModal);
+    }
+    
+    // Update message
+    document.getElementById('confirm-message').textContent = message;
+    
+    // Show modal
+    confirmModal.style.display = 'block';
+    
+    // Handle confirmation
+    const yesBtn = document.getElementById('confirm-yes');
+    const noBtn = document.getElementById('confirm-no');
+    
+    // Remove existing listeners
+    const newYesBtn = yesBtn.cloneNode(true);
+    const newNoBtn = noBtn.cloneNode(true);
+    yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+    noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+    
+    // Add new listeners
+    newYesBtn.addEventListener('click', () => {
+        confirmModal.style.display = 'none';
+        if (onConfirm) onConfirm();
+    });
+    
+    newNoBtn.addEventListener('click', () => {
+        confirmModal.style.display = 'none';
+        if (onCancel) onCancel();
+    });
+    
+    // Close on outside click
+    confirmModal.addEventListener('click', (e) => {
+        if (e.target === confirmModal) {
+            confirmModal.style.display = 'none';
+            if (onCancel) onCancel();
+        }
+    });
 }
