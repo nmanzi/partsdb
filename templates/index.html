@@ -37,6 +37,10 @@
                     <button id="add-part" class="btn-primary">Add Part</button>
                     <button id="add-bin" class="btn-secondary">Add Bin</button>
                     <button id="add-category" class="btn-secondary">Add Category</button>
+                    <div class="csv-actions">
+                        <button id="import-csv" class="btn-secondary">Import CSV</button>
+                        <button id="export-csv" class="btn-secondary">Export CSV</button>
+                    </div>
                 </div>
             </div>
 
@@ -65,6 +69,9 @@
             </section>
         </main>
     </div>
+
+    <!-- Hidden file input for CSV import -->
+    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
 
     <!-- Modal for Add/Edit Forms -->
     <div id="modal" class="modal">

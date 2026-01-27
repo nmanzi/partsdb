@@ -88,6 +88,27 @@ nav {
     cursor: pointer;
 }
 
+.csv-actions {
+    display: flex;
+    gap: 10px;
+    padding-left: 10px;
+    border-left: 1px solid #eee;
+}
+
+.csv-actions button {
+    padding: 8px 12px;
+    border: 1px solid #27ae60;
+    background: #27ae60;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.csv-actions button:hover {
+    background: #219a52;
+}
+
 /* Button Styles */
 .btn-primary {
     background: #27ae60;

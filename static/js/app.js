@@ -42,6 +42,11 @@ function initializeEventListeners() {
     document.getElementById('add-bin').addEventListener('click', () => showBinForm());
     document.getElementById('add-category').addEventListener('click', () => showCategoryForm());
 
+    // CSV import/export buttons
+    document.getElementById('import-csv').addEventListener('click', triggerCSVImport);
+    document.getElementById('export-csv').addEventListener('click', exportCSV);
+    document.getElementById('csv-file-input').addEventListener('change', handleCSVImport);
+
     // Modal
     closeModal.addEventListener('click', hideModal);
     window.addEventListener('click', (e) => {
@@ -575,6 +580,94 @@ function escapeHtml(text) {
 function showSuccess(message) {
     // Simple success message - could be enhanced with a toast library
     alert('✅ ' + message);
+}
+
+// CSV Import/Export functions
+function triggerCSVImport() {
+    document.getElementById('csv-file-input').click();
+}
+
+async function handleCSVImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('❌ Please select a CSV file');
+        return;
+    }
+
+    try {
+        showLoading('Importing CSV...');
+        const result = await API.importCSV(file);
+        
+        hideLoading();
+        
+        // Show results
+        let message = result.message;
+        if (result.errors && result.errors.length > 0) {
+            message += '\n\nErrors encountered:\n' + result.errors.join('\n');
+        }
+        
+        if (result.created_parts && result.created_parts.length > 0) {
+            message += '\n\nSuccessfully imported:\n' + result.created_parts.slice(0, 10).join('\n');
+            if (result.created_parts.length > 10) {
+                message += `\n... and ${result.created_parts.length - 10} more`;
+            }
+        }
+        
+        alert('📊 ' + message);
+        
+        // Refresh the current view if we're on parts
+        if (currentView === 'parts') {
+            await loadParts();
+        }
+        
+        // Clear the file input
+        event.target.value = '';
+        
+    } catch (error) {
+        hideLoading();
+        alert('❌ Import failed: ' + error.message);
+    }
+}
+
+async function exportCSV() {
+    try {
+        showLoading('Exporting CSV...');
+        const blob = await API.exportCSV();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `parts_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        hideLoading();
+        showSuccess('CSV export completed');
+        
+    } catch (error) {
+        hideLoading();
+        alert('❌ Export failed: ' + error.message);
+    }
+}
+
+function showLoading(message) {
+    // Simple loading indicator - could be enhanced
+    const loadingEl = document.createElement('div');
+    loadingEl.id = 'loading-indicator';
+    loadingEl.innerHTML = `<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;">${message}</div>`;
+    document.body.appendChild(loadingEl);
+}
+
+function hideLoading() {
+    const loadingEl = document.getElementById('loading-indicator');
+    if (loadingEl) {
+        loadingEl.remove();
+    }
 }
 
 function showError(message) {

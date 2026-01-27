@@ -120,4 +120,33 @@ class API {
             method: 'DELETE',
         });
     }
+
+    // CSV Import/Export API
+    static async importCSV(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${API_BASE}/import/csv`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    }
+
+    static async exportCSV() {
+        const response = await fetch(`${API_BASE}/export/csv`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        return blob;
+    }
 }

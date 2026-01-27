@@ -140,10 +140,16 @@ Once running, visit http://localhost:8000/docs for interactive API documentation
 - Parts can optionally be assigned to categories
 
 ### CSV Import/Export
-The application supports bulk import and export of parts data via CSV files.
+The application supports bulk import and export of parts data via CSV files, both through the web UI and REST API.
+
+#### Using the Web Interface
+- **Import CSV**: Click the "Import CSV" button in the toolbar to select and upload a CSV file
+- **Export CSV**: Click the "Export CSV" button to download all current parts data as a CSV file
+- **Validation**: Import errors are displayed with specific line numbers and descriptions
+- **Progress**: Loading indicators show import/export progress
 
 #### Importing Parts from CSV
-Use the `/api/import/csv` endpoint to bulk import parts:
+The web interface provides an easy way to import parts, or you can use the `/api/import/csv` endpoint directly:
 
 **Expected CSV Format:**
 ```csv
@@ -173,7 +179,7 @@ Raspberry Pi 4,Single board computer,1,Electronics,4GB RAM Model B,Raspberry Pi 
 - **Safe**: Import errors don't affect valid rows
 
 #### Exporting Parts to CSV
-Use the `/api/export/csv` endpoint to download all parts data in CSV format. The export uses the same column structure as import, making it easy to:
+The web interface provides a one-click export, or you can use the `/api/export/csv` endpoint to download all parts data in CSV format. The export uses the same column structure as import, making it easy to:
 - Backup your inventory data
 - Share part lists with others
 - Prepare import templates
