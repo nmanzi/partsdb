@@ -14,6 +14,7 @@ This is a Python webapp for managing inventory of electronic parts, cables, powe
 - Use Python 3.8+ with FastAPI framework
 - Follow REST API best practices
 - Use SQLAlchemy for database operations
+- Use Alembic for database migrations
 - Keep frontend simple and responsive
 - Follow PEP 8 coding standards
 

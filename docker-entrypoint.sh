@@ -1,15 +1,20 @@
 #!/bin/bash
 set -e
 
-# Initialize database if it doesn't exist
+# Ensure data directory exists
+mkdir -p /app/data
+
+# Run database migrations
+echo "Setting up database..."
 if [ ! -f "/app/data/parts_inventory.db" ]; then
-    echo "Database not found. Initializing with sample data..."
-    python init_db.py
+    echo "Database not found. Creating empty database with current schema..."
+    alembic upgrade head
 else
-    echo "Database found. Using existing database."
-    # Just ensure tables exist (in case of schema updates)
-    python -c "from backend.database import create_tables; create_tables()"
+    echo "Database found. Running migrations..."
+    alembic upgrade head
 fi
+
+echo "Database setup complete."
 
 # Start the application
 exec "$@"
