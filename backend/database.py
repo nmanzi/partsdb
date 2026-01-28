@@ -13,7 +13,6 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 # SQLModel models that work both as database models and API schemas
 class BinBase(SQLModel):
     number: int = Field(unique=True, index=True)
-    name: Optional[str] = Field(default=None, max_length=100)
     description: Optional[str] = Field(default=None)
     location: Optional[str] = Field(default=None, max_length=200)
 
@@ -30,7 +29,6 @@ class BinCreate(BinBase):
     pass
 
 class BinUpdate(SQLModel):
-    name: Optional[str] = None
     description: Optional[str] = None
     location: Optional[str] = None
 

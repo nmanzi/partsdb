@@ -154,7 +154,6 @@ async function loadBins() {
         container.innerHTML = bins.map(bin => `
             <div class="card">
                 <h3>Bin ${bin.number}</h3>
-                <p><strong>Name:</strong> ${escapeHtml(bin.name || 'N/A')}</p>
                 <p><strong>Description:</strong> ${escapeHtml(bin.description || 'N/A')}</p>
                 <p><strong>Location:</strong> ${escapeHtml(bin.location || 'N/A')}</p>
                 <div class="meta">
@@ -216,7 +215,7 @@ async function populateFilters() {
         const binFilter = document.getElementById('bin-filter');
         binFilter.innerHTML = '<option value="">All Bins</option>';
         bins.forEach(bin => {
-            binFilter.innerHTML += `<option value="${bin.id}">Bin ${bin.number} ${bin.name ? '(' + bin.name + ')' : ''}</option>`;
+            binFilter.innerHTML += `<option value="${bin.id}">Bin ${bin.number}</option>`;
         });
         
         // Populate category filter
@@ -372,10 +371,6 @@ async function showBinForm(binId = null) {
                 <input type="number" id="bin-number" value="${bin ? bin.number : ''}" required ${binId ? 'readonly' : ''}>
             </div>
             <div class="form-group">
-                <label for="bin-name">Name</label>
-                <input type="text" id="bin-name" value="${bin ? escapeHtml(bin.name || '') : ''}">
-            </div>
-            <div class="form-group">
                 <label for="bin-description">Description</label>
                 <textarea id="bin-description">${bin ? escapeHtml(bin.description || '') : ''}</textarea>
             </div>
@@ -469,7 +464,6 @@ async function savePart(partId = null) {
 async function saveBin(binId = null) {
     try {
         const formData = {
-            name: document.getElementById('bin-name').value.trim() || null,
             description: document.getElementById('bin-description').value.trim() || null,
             location: document.getElementById('bin-location').value.trim() || null,
         };

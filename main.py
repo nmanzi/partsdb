@@ -192,7 +192,6 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                     # Create bin with basic info
                     bin_create = database.BinCreate(
                         number=bin_number,
-                        name=f"Bin {bin_number}",
                         description=f"Auto-created bin {bin_number}"
                     )
                     db_bin = crud.create_bin(db, bin_create)
