@@ -10,6 +10,13 @@ DATABASE_URL = "sqlite:///./data/parts_inventory.db"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
+# Junction table for many-to-many relationship between Parts and Categories
+class PartCategoryLink(SQLModel, table=True):
+    __tablename__ = "part_categories"
+    
+    part_id: int = Field(foreign_key="parts.id", primary_key=True)
+    category_id: int = Field(foreign_key="categories.id", primary_key=True)
+
 # SQLModel models that work both as database models and API schemas
 class BinBase(SQLModel):
     number: int = Field(unique=True, index=True)
@@ -46,8 +53,8 @@ class Category(CategoryBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
-    # Relationship to parts
-    parts: List["Part"] = Relationship(back_populates="category")
+    # Many-to-many relationship with parts
+    parts: List["Part"] = Relationship(back_populates="categories", link_model=PartCategoryLink)
 
 class CategoryCreate(CategoryBase):
     pass
@@ -69,7 +76,6 @@ class PartBase(SQLModel):
     manufacturer: Optional[str] = Field(default=None, max_length=100)
     model: Optional[str] = Field(default=None, max_length=100)
     bin_id: int = Field(foreign_key="bins.id")
-    category_id: Optional[int] = Field(default=None, foreign_key="categories.id")
 
 class Part(PartBase, table=True):
     __tablename__ = "parts"
@@ -80,10 +86,10 @@ class Part(PartBase, table=True):
     
     # Relationships
     bin: Bin = Relationship(back_populates="parts")
-    category: Optional[Category] = Relationship(back_populates="parts")
+    categories: List[Category] = Relationship(back_populates="parts", link_model=PartCategoryLink)
 
 class PartCreate(PartBase):
-    pass
+    category_ids: Optional[List[int]] = Field(default_factory=list)
 
 class PartUpdate(SQLModel):
     name: Optional[str] = None
@@ -94,14 +100,14 @@ class PartUpdate(SQLModel):
     manufacturer: Optional[str] = None
     model: Optional[str] = None
     bin_id: Optional[int] = None
-    category_id: Optional[int] = None
+    category_ids: Optional[List[int]] = None
 
 class PartRead(PartBase):
     id: int
     created_at: datetime
     updated_at: datetime
     bin: BinRead
-    category: Optional[CategoryRead] = None
+    categories: List[CategoryRead] = []
 
 # Response schemas with relationships
 class BinWithParts(BinRead):

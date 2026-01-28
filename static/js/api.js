@@ -34,7 +34,23 @@ class API {
 
     // Parts API
     static async getParts(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
+        let queryString = '';
+        if (Object.keys(params).length > 0) {
+            const urlParams = new URLSearchParams();
+            
+            // Handle each parameter
+            Object.entries(params).forEach(([key, value]) => {
+                if (key === 'category_ids' && Array.isArray(value)) {
+                    // Handle array parameters specially
+                    value.forEach(id => urlParams.append('category_ids', id));
+                } else if (value !== null && value !== undefined && value !== '') {
+                    urlParams.append(key, value);
+                }
+            });
+            
+            queryString = urlParams.toString();
+        }
+        
         const endpoint = queryString ? `/parts?${queryString}` : '/parts';
         return this.request(endpoint);
     }

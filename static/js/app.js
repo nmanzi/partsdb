@@ -105,6 +105,8 @@ async function loadParts() {
             ...(currentSearch && { search: currentSearch })
         };
         
+        console.log('Loading parts with params:', searchParams); // Debug log
+        
         const parts = await API.getParts(searchParams);
         
         if (parts.length === 0) {
@@ -121,7 +123,7 @@ async function loadParts() {
                 <p><strong>Manufacturer:</strong> ${escapeHtml(part.manufacturer || 'N/A')}</p>
                 <p><strong>Model:</strong> ${escapeHtml(part.model || 'N/A')}</p>
                 <p><strong>Bin:</strong> Bin ${part.bin.number} ${part.bin.name ? '(' + escapeHtml(part.bin.name) + ')' : ''}</p>
-                ${part.category ? `<p><strong>Category:</strong> ${escapeHtml(part.category.name)}</p>` : ''}
+                ${part.categories && part.categories.length > 0 ? `<p><strong>Categories:</strong> ${part.categories.map(cat => escapeHtml(cat.name)).join(', ')}</p>` : ''}
                 <div class="meta">
                     <span class="quantity">Qty: ${part.quantity}</span>
                     <span class="badge">ID: ${part.id}</span>
@@ -251,7 +253,9 @@ function applyFilters() {
     
     currentFilters = {};
     if (binId) currentFilters.bin_id = binId;
-    if (categoryId) currentFilters.category_id = categoryId;
+    if (categoryId) currentFilters.category_ids = [categoryId];
+    
+    console.log('Applying filters:', currentFilters); // Debug log
     
     if (currentView === 'parts') {
         loadParts();
@@ -324,15 +328,24 @@ async function showPartForm(partId = null) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="part-category">Category</label>
-                    <select id="part-category">
-                        <option value="">No category</option>
-                        ${categories.map(category => `
-                            <option value="${category.id}" ${part && part.category_id === category.id ? 'selected' : ''}>
-                                ${category.name}
-                            </option>
-                        `).join('')}
-                    </select>
+                    <label for="part-categories">Categories</label>
+                    <div class="multi-select-container">
+                        <div class="multi-select-display" id="categories-display" onclick="toggleCategoriesDropdown()">
+                            <span id="categories-text">Select categories...</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="multi-select-options" id="categories-options" style="display: none;">
+                            ${categories.map(category => {
+                                const isSelected = part && part.categories && part.categories.some(c => c.id === category.id);
+                                return `
+                                    <label class="checkbox-option">
+                                        <input type="checkbox" value="${category.id}" ${isSelected ? 'checked' : ''} onchange="updateCategoriesDisplay()">
+                                        <span>${escapeHtml(category.name)}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="hideModal()">Cancel</button>
@@ -345,6 +358,9 @@ async function showPartForm(partId = null) {
             e.preventDefault();
             savePart(partId);
         });
+        
+        // Initialize categories display
+        updateCategoriesDisplay();
         
         showModal();
     } catch (error) {
@@ -433,6 +449,10 @@ async function showCategoryForm(categoryId = null) {
 // Save functions
 async function savePart(partId = null) {
     try {
+        // Get selected category IDs
+        const categoryCheckboxes = document.querySelectorAll('#categories-options input[type="checkbox"]:checked');
+        const categoryIds = Array.from(categoryCheckboxes).map(cb => parseInt(cb.value));
+        
         const formData = {
             name: document.getElementById('part-name').value.trim(),
             description: document.getElementById('part-description').value.trim() || null,
@@ -442,7 +462,7 @@ async function savePart(partId = null) {
             model: document.getElementById('part-model').value.trim() || null,
             quantity: parseInt(document.getElementById('part-quantity').value),
             bin_id: parseInt(document.getElementById('part-bin').value),
-            category_id: document.getElementById('part-category').value ? parseInt(document.getElementById('part-category').value) : null,
+            category_ids: categoryIds,
         };
         
         if (partId) {
@@ -785,4 +805,46 @@ function showConfirmModal(message, onConfirm, onCancel = null) {
             if (onCancel) onCancel();
         }
     });
+}
+
+// Multi-select category functions
+function toggleCategoriesDropdown() {
+    const dropdown = document.getElementById('categories-options');
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    
+    // Close dropdown when clicking outside
+    if (!isVisible) {
+        setTimeout(() => {
+            document.addEventListener('click', closeCategoriesDropdown);
+        }, 0);
+    }
+}
+
+function closeCategoriesDropdown(event) {
+    const dropdown = document.getElementById('categories-options');
+    const display = document.getElementById('categories-display');
+    
+    if (dropdown && display && !dropdown.contains(event.target) && !display.contains(event.target)) {
+        dropdown.style.display = 'none';
+        document.removeEventListener('click', closeCategoriesDropdown);
+    }
+}
+
+function updateCategoriesDisplay() {
+    const checkboxes = document.querySelectorAll('#categories-options input[type="checkbox"]');
+    const selectedCategories = [];
+    
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const label = checkbox.nextElementSibling.textContent;
+            selectedCategories.push(label);
+        }
+    });
+    
+    const displayText = selectedCategories.length > 0 
+        ? selectedCategories.join(', ')
+        : 'Select categories...';
+    
+    document.getElementById('categories-text').textContent = displayText;
 }

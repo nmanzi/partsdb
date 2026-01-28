@@ -3,6 +3,14 @@ from typing import List, Optional
 from datetime import datetime
 from . import database
 
+# Helper function to get parts by category IDs
+def get_parts_by_categories(db: Session, category_ids: List[int], skip: int = 0, limit: int = 100) -> List[database.Part]:
+    """Get parts that belong to any of the specified categories"""
+    statement = select(database.Part).join(database.PartCategoryLink).where(
+        database.PartCategoryLink.category_id.in_(category_ids)
+    ).offset(skip).limit(limit)
+    return db.exec(statement).all()
+
 # Bin CRUD operations
 def get_bin(db: Session, bin_id: int) -> Optional[database.Bin]:
     return db.get(database.Bin, bin_id)
@@ -79,12 +87,15 @@ def delete_category(db: Session, category_id: int) -> Optional[database.Category
 def get_part(db: Session, part_id: int) -> Optional[database.Part]:
     return db.get(database.Part, part_id)
 
-def get_parts(db: Session, skip: int = 0, limit: int = 100, bin_id: Optional[int] = None, category_id: Optional[int] = None) -> List[database.Part]:
+def get_parts(db: Session, skip: int = 0, limit: int = 100, bin_id: Optional[int] = None, category_ids: Optional[List[int]] = None) -> List[database.Part]:
     statement = select(database.Part)
     if bin_id:
         statement = statement.where(database.Part.bin_id == bin_id)
-    if category_id:
-        statement = statement.where(database.Part.category_id == category_id)
+    if category_ids:
+        # Join with the junction table to filter by category IDs and ensure no duplicates
+        statement = statement.join(database.PartCategoryLink).where(
+            database.PartCategoryLink.category_id.in_(category_ids)
+        ).distinct()
     statement = statement.offset(skip).limit(limit)
     return db.exec(statement).all()
 
@@ -113,18 +124,48 @@ def search_parts(db: Session, search_term: str, skip: int = 0, limit: int = 100)
     return db.exec(statement).all()
 
 def create_part(db: Session, part: database.PartCreate) -> database.Part:
-    db_part = database.Part.model_validate(part)
+    # Extract category_ids from the part data
+    category_ids = part.category_ids if hasattr(part, 'category_ids') else []
+    
+    # Create part without category_ids (since it's not in the actual table)
+    part_data = part.model_dump(exclude={'category_ids'})
+    db_part = database.Part.model_validate(part_data)
     db.add(db_part)
     db.commit()
     db.refresh(db_part)
+    
+    # Add category relationships
+    if category_ids:
+        for category_id in category_ids:
+            category = get_category(db, category_id)
+            if category:
+                db_part.categories.append(category)
+        db.commit()
+        db.refresh(db_part)
+    
     return db_part
 
 def update_part(db: Session, part_id: int, part_update: database.PartUpdate) -> Optional[database.Part]:
     db_part = get_part(db, part_id)
     if db_part:
-        update_data = part_update.model_dump(exclude_unset=True)
+        # Extract category_ids if present
+        category_ids = getattr(part_update, 'category_ids', None)
+        
+        # Update regular fields
+        update_data = part_update.model_dump(exclude_unset=True, exclude={'category_ids'})
         for key, value in update_data.items():
             setattr(db_part, key, value)
+        
+        # Update categories if provided
+        if category_ids is not None:
+            # Clear existing categories
+            db_part.categories.clear()
+            # Add new categories
+            for category_id in category_ids:
+                category = get_category(db, category_id)
+                if category:
+                    db_part.categories.append(category)
+        
         # Manually update the updated_at timestamp
         db_part.updated_at = datetime.utcnow()
         db.commit()

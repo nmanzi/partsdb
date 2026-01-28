@@ -1,13 +1,13 @@
 name,description,quantity,part_type,specifications,manufacturer,model,bin_number,category_name
-Dell 19.5v 2.31a DC power supply,DC power supply with barrel jack,2,Power Supply,19.5V 2.31A with barrel jack,Dell,,3,Power Supplies
+Dell 19.5v 2.31a DC power supply,DC power supply with barrel jack,2,Power Supply,19.5V 2.31A with barrel jack,Dell,,3,Power Supplies;Electronics
 UBTECH DVE DC switching power supply,DC switching power supply,1,Power Supply,9.6V 2A with barrel jack,UBTECH,DVE,3,Power Supplies
-5V 2A DC switching power supply,DC power supply with barrel jack,1,Power Supply,5V 2A with barrel jack,,,3,Power Supplies
-6V 0.3A DC power supply,DC power supply with barrel jack,1,Power Supply,6V 0.3A with barrel jack,,,3,Power Supplies
+5V 2A DC switching power supply,DC power supply with barrel jack,1,Power Supply,5V 2A with barrel jack,,,3,Power Supplies;Low Voltage
+6V 0.3A DC power supply,DC power supply with barrel jack,1,Power Supply,6V 0.3A with barrel jack,,,3,Power Supplies;Low Voltage
 12V 0.5A DC power supply,DC power supply with barrel jack,1,Power Supply,12V 0.5A with barrel jack,,,3,Power Supplies
-5V 0.7A DC power supply,DC power supply with USB micro jack,1,Power Supply,5V 0.7A with USB micro jack,,,3,Power Supplies
-Nintendo DS Lite AC adapter,Nintendo DS Lite AC adapter,1,Power Supply,USG-002,Nintendo,USG-002,3,Power Supplies
-5V 4A DC power supply,DC power supply with barrel jack,1,Power Supply,5V 4A with barrel jack,,,3,Power Supplies
-Lenovo 65W USB-C power supply,65W USB-C power supply,2,Power Supply,65W USB-C,Lenovo,,3,Power Supplies
+5V 0.7A DC power supply,DC power supply with USB micro jack,1,Power Supply,5V 0.7A with USB micro jack,,,3,Power Supplies;Low Voltage;USB
+Nintendo DS Lite AC adapter,Nintendo DS Lite AC adapter,1,Power Supply,USG-002,Nintendo,USG-002,3,Power Supplies;Gaming
+5V 4A DC power supply,DC power supply with barrel jack,1,Power Supply,5V 4A with barrel jack,,,3,Power Supplies;Low Voltage
+Lenovo 65W USB-C power supply,65W USB-C power supply,2,Power Supply,65W USB-C,Lenovo,,3,Power Supplies;Electronics;USB
 5V 1A DC power supply for AV2HDMI,DC power supply with USB mini jack,1,Power Supply,5V 1A with USB mini jack for Digitech AV2HDMI RCA to HDMI converter,,,3,Power Supplies
 USB-C multi-voltage power supply,Multi-voltage USB-C power supply,1,Power Supply,5V 3A / 9V 2A / 12V 1.5A USB-C,,,3,Power Supplies
 Adjustable DC power supply,Adjustable DC power supply with barrel jack,1,Power Supply,3VDC-12VDC adjustable with barrel jack,,,3,Power Supplies

@@ -276,6 +276,13 @@ nav {
     cursor: pointer;
 }
 
+.filter-help {
+    display: block;
+    color: #7f8c8d;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .csv-actions {
     display: flex;
     gap: 10px;
@@ -505,6 +512,77 @@ nav {
 
 .form-actions button {
     margin-left: 10px;
+}
+
+/* Multi-select dropdown styles */
+.multi-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.multi-select-display {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 36px;
+}
+
+.multi-select-display:hover {
+    border-color: #3498db;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: #7f8c8d;
+}
+
+.multi-select-display:hover .dropdown-arrow {
+    color: #3498db;
+}
+
+.multi-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.checkbox-option:hover {
+    background-color: #f8f9fa;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.checkbox-option span {
+    flex: 1;
+    cursor: pointer;
 }
 
 /* Loading and Empty States */

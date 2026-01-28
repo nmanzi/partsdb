@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, Request, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
@@ -101,13 +101,24 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
 # API Routes - Parts
 @app.get("/api/parts", response_model=List[database.PartRead])
 def read_parts(skip: int = 0, limit: int = 100, bin_id: Optional[int] = None, 
-               category_id: Optional[int] = None, search: Optional[str] = None, 
+               category_ids: Optional[List[int]] = Query(None), search: Optional[str] = None, 
                db: Session = Depends(get_db)):
     if search:
         parts = crud.search_parts(db, search_term=search, skip=skip, limit=limit)
     else:
-        parts = crud.get_parts(db, skip=skip, limit=limit, bin_id=bin_id, category_id=category_id)
+        parts = crud.get_parts(db, skip=skip, limit=limit, bin_id=bin_id, category_ids=category_ids)
     return parts
+
+# Debug endpoint to test category filtering
+@app.get("/api/debug/parts")
+def debug_parts(category_ids: Optional[List[int]] = Query(None), db: Session = Depends(get_db)):
+    """Debug endpoint to test category filtering"""
+    parts = crud.get_parts(db, category_ids=category_ids, limit=1000)
+    return {
+        "category_ids": category_ids,
+        "parts_count": len(parts),
+        "parts": [{"id": p.id, "name": p.name, "categories": [c.name for c in p.categories]} for p in parts[:5]]
+    }
 
 @app.post("/api/parts", response_model=database.PartRead)
 def create_part(part: database.PartCreate, db: Session = Depends(get_db)):
@@ -116,11 +127,12 @@ def create_part(part: database.PartCreate, db: Session = Depends(get_db)):
     if not db_bin:
         raise HTTPException(status_code=400, detail="Bin not found")
     
-    # Verify category exists if provided
-    if part.category_id:
-        db_category = crud.get_category(db, part.category_id)
-        if not db_category:
-            raise HTTPException(status_code=400, detail="Category not found")
+    # Verify categories exist if provided
+    if part.category_ids:
+        for category_id in part.category_ids:
+            db_category = crud.get_category(db, category_id)
+            if not db_category:
+                raise HTTPException(status_code=400, detail=f"Category with id {category_id} not found")
     
     return crud.create_part(db=db, part=part)
 
@@ -139,11 +151,12 @@ def update_part(part_id: int, part_update: database.PartUpdate, db: Session = De
         if not db_bin:
             raise HTTPException(status_code=400, detail="Bin not found")
     
-    # Verify category exists if provided
-    if part_update.category_id:
-        db_category = crud.get_category(db, part_update.category_id)
-        if not db_category:
-            raise HTTPException(status_code=400, detail="Category not found")
+    # Verify categories exist if provided
+    if part_update.category_ids:
+        for category_id in part_update.category_ids:
+            db_category = crud.get_category(db, category_id)
+            if not db_category:
+                raise HTTPException(status_code=400, detail=f"Category with id {category_id} not found")
     
     db_part = crud.update_part(db, part_id=part_id, part_update=part_update)
     if db_part is None:
@@ -164,8 +177,9 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
     Import parts from CSV file. Expected CSV columns:
     name,description,quantity,part_type,specifications,manufacturer,model,bin_number,category_name
     
-    bin_number and category_name will be used to find existing bins/categories.
-    If they don't exist, they will be created.
+    bin_number will be used to find existing bins. If they don't exist, they will be created.
+    category_name can contain multiple categories separated by semicolons (e.g., "Electronics;Components").
+    Categories will be created if they don't exist.
     """
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="File must be a CSV")
@@ -196,18 +210,21 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                     )
                     db_bin = crud.create_bin(db, bin_create)
                 
-                # Get or create category (optional)
-                category_id = None
-                category_name = row.get('category_name', '').strip()
-                if category_name:
-                    db_category = crud.get_category_by_name(db, category_name)
-                    if not db_category:
-                        category_create = database.CategoryCreate(
-                            name=category_name,
-                            description=f"Auto-created category {category_name}"
-                        )
-                        db_category = crud.create_category(db, category_create)
-                    category_id = db_category.id
+                # Get or create categories (can be multiple, separated by semicolons)
+                category_ids = []
+                category_names = row.get('category_name', '').strip()
+                if category_names:
+                    for category_name in category_names.split(';'):
+                        category_name = category_name.strip()
+                        if category_name:
+                            db_category = crud.get_category_by_name(db, category_name)
+                            if not db_category:
+                                category_create = database.CategoryCreate(
+                                    name=category_name,
+                                    description=f"Auto-created category {category_name}"
+                                )
+                                db_category = crud.create_category(db, category_create)
+                            category_ids.append(db_category.id)
                 
                 # Create part
                 part_data = database.PartCreate(
@@ -219,7 +236,7 @@ async def import_parts_csv(file: UploadFile = File(...), db: Session = Depends(g
                     manufacturer=row.get('manufacturer', '').strip() or None,
                     model=row.get('model', '').strip() or None,
                     bin_id=db_bin.id,
-                    category_id=category_id
+                    category_ids=category_ids
                 )
                 
                 if not part_data.name:
@@ -261,6 +278,8 @@ def export_parts_csv(db: Session = Depends(get_db)):
     
     # Write data
     for part in parts:
+        # Join multiple categories with semicolons
+        category_names = ';'.join([category.name for category in part.categories]) if part.categories else ''
         writer.writerow([
             part.name,
             part.description or '',
@@ -270,7 +289,7 @@ def export_parts_csv(db: Session = Depends(get_db)):
             part.manufacturer or '',
             part.model or '',
             part.bin.number,
-            part.category.name if part.category else ''
+            category_names
         ])
     
     output.seek(0)
