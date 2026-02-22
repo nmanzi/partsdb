@@ -3,8 +3,11 @@ let currentView = 'parts';
 let currentSearch = '';
 let currentFilters = {};
 let currentParts = []; // Store loaded parts for sorting
+let currentBins = []; // Store loaded bins for sorting
 let sortColumn = null;
 let sortDirection = 'asc';
+let binsSortColumn = null;
+let binsSortDirection = 'asc';
 
 // DOM elements
 const viewButtons = document.querySelectorAll('.nav-btn');
@@ -50,11 +53,19 @@ function initializeEventListeners() {
     document.getElementById('export-csv').addEventListener('click', exportCSV);
     document.getElementById('csv-file-input').addEventListener('change', handleCSVImport);
 
-    // Table sorting
-    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+    // Table sorting - Parts
+    document.querySelectorAll('#parts-table th.sortable').forEach(header => {
         header.addEventListener('click', (e) => {
             const column = e.currentTarget.getAttribute('data-sort');
             handleSort(column);
+        });
+    });
+    
+    // Table sorting - Bins
+    document.querySelectorAll('#bins-table th.sortable').forEach(header => {
+        header.addEventListener('click', (e) => {
+            const column = e.currentTarget.getAttribute('data-sort');
+            handleBinsSort(column);
         });
     });
 
@@ -233,7 +244,7 @@ function sortParts(column, direction) {
 // Update sort indicators in headers
 function updateSortIndicators() {
     // Clear all indicators
-    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+    document.querySelectorAll('#parts-table th.sortable').forEach(header => {
         const indicator = header.querySelector('.sort-indicator');
         indicator.textContent = '';
         header.classList.remove('sorted-asc', 'sorted-desc');
@@ -241,7 +252,7 @@ function updateSortIndicators() {
     
     // Add indicator to current sort column
     if (sortColumn) {
-        const header = document.querySelector(`.data-table th[data-sort="${sortColumn}"]`);
+        const header = document.querySelector(`#parts-table th[data-sort="${sortColumn}"]`);
         if (header) {
             const indicator = header.querySelector('.sort-indicator');
             indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
@@ -250,37 +261,124 @@ function updateSortIndicators() {
     }
 }
 
+// Update bins sort indicators in headers
+function updateBinsSortIndicators() {
+    // Clear all indicators
+    document.querySelectorAll('#bins-table th.sortable').forEach(header => {
+        const indicator = header.querySelector('.sort-indicator');
+        indicator.textContent = '';
+        header.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    
+    // Add indicator to current sort column
+    if (binsSortColumn) {
+        const header = document.querySelector(`#bins-table th[data-sort="${binsSortColumn}"]`);
+        if (header) {
+            const indicator = header.querySelector('.sort-indicator');
+            indicator.textContent = binsSortDirection === 'asc' ? '▲' : '▼';
+            header.classList.add(`sorted-${binsSortDirection}`);
+        }
+    }
+}
+
 // Load and display bins
 async function loadBins() {
     try {
-        const container = document.getElementById('bins-list');
-        container.innerHTML = '<div class="loading">Loading bins...</div>';
+        const tbody = document.getElementById('bins-list');
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading bins...</td></tr>';
         
-        const bins = await API.getBins();
+        currentBins = await API.getBins();
         
-        if (bins.length === 0) {
-            container.innerHTML = '<div class="empty-state">No bins found</div>';
+        // Get all parts to calculate part counts per bin
+        const allParts = await API.getParts();
+        
+        // Calculate part count for each bin
+        currentBins = currentBins.map(bin => ({
+            ...bin,
+            part_count: allParts.filter(part => part.bin_id === bin.id).length
+        }));
+        
+        if (currentBins.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No bins found</td></tr>';
             return;
         }
         
-        container.innerHTML = bins.map(bin => `
-            <div class="card">
-                <h3>Bin ${bin.number}</h3>
-                <p><strong>Description:</strong> ${escapeHtml(bin.description || 'N/A')}</p>
-                <p><strong>Location:</strong> ${escapeHtml(bin.location || 'N/A')}</p>
-                <div class="meta">
-                    <span class="badge">ID: ${bin.id}</span>
-                </div>
-                <div class="actions">
-                    <button class="btn-edit" onclick="editBin(${bin.id})">Edit</button>
-                    <button class="btn-danger" onclick="deleteBin(${bin.id})">Delete</button>
-                </div>
-            </div>
-        `).join('');
+        // Apply current sort if any
+        if (binsSortColumn) {
+            sortBins(binsSortColumn, binsSortDirection);
+        }
+        
+        renderBins();
     } catch (error) {
         document.getElementById('bins-list').innerHTML = 
-            `<div class="empty-state">Error loading bins: ${error.message}</div>`;
+            `<tr><td colspan="5" class="empty-state">Error loading bins: ${error.message}</td></tr>`;
     }
+}
+
+// Render bins table
+function renderBins() {
+    const tbody = document.getElementById('bins-list');
+    
+    tbody.innerHTML = currentBins.map(bin => `
+        <tr>
+            <td class="cell-bin-number">${bin.number}</td>
+            <td>${escapeHtml(bin.location || '-')}</td>
+            <td class="cell-part-count">${bin.part_count}</td>
+            <td class="cell-description">${escapeHtml(bin.size || '-')}</td>
+            <td class="cell-actions">
+                <button class="btn-edit" onclick="editBin(${bin.id})" title="Edit">Edit</button>
+                <button class="btn-danger" onclick="deleteBin(${bin.id})" title="Delete">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Handle bins sorting
+function handleBinsSort(column) {
+    if (binsSortColumn === column) {
+        // Toggle direction if clicking same column
+        binsSortDirection = binsSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // New column, default to ascending
+        binsSortColumn = column;
+        binsSortDirection = 'asc';
+    }
+    
+    sortBins(column, binsSortDirection);
+    renderBins();
+    updateBinsSortIndicators();
+}
+
+// Sort bins array
+function sortBins(column, direction) {
+    currentBins.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(column) {
+            case 'number':
+                aVal = a.number || 0;
+                bVal = b.number || 0;
+                break;
+            case 'location':
+                aVal = a.location || '';
+                bVal = b.location || '';
+                break;
+            case 'part_count':
+                aVal = a.part_count || 0;
+                bVal = b.part_count || 0;
+                break;
+            default:
+                return 0;
+        }
+        
+        // Handle numeric vs string comparison
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+            return direction === 'asc' ? aVal - bVal : bVal - aVal;
+        } else {
+            const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
+            return direction === 'asc' ? comparison : -comparison;
+        }
+    });
 }
 
 // Load and display categories
@@ -493,8 +591,9 @@ async function showBinForm(binId = null) {
                 <input type="number" id="bin-number" value="${bin ? bin.number : ''}" required ${binId ? 'readonly' : ''}>
             </div>
             <div class="form-group">
-                <label for="bin-description">Description</label>
-                <textarea id="bin-description">${bin ? escapeHtml(bin.description || '') : ''}</textarea>
+                <label for="bin-size">Size</label>
+                <sub>e.g. "Small", "Medium", "Large"</sub>
+                <input type="text" id="bin-size" value="${bin ? escapeHtml(bin.size || '') : ''}">
             </div>
             <div class="form-group">
                 <label for="bin-location">Location</label>

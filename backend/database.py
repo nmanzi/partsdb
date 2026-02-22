@@ -20,7 +20,7 @@ class PartCategoryLink(SQLModel, table=True):
 # SQLModel models that work both as database models and API schemas
 class BinBase(SQLModel):
     number: int = Field(unique=True, index=True)
-    description: Optional[str] = Field(default=None)
+    size: Optional[str] = Field(default=None)
     location: Optional[str] = Field(default=None, max_length=200)
 
 class Bin(BinBase, table=True):
@@ -36,7 +36,7 @@ class BinCreate(BinBase):
     pass
 
 class BinUpdate(SQLModel):
-    description: Optional[str] = None
+    size: Optional[str] = None
     location: Optional[str] = None
 
 class BinRead(BinBase):

@@ -20,7 +20,7 @@ def get_bin_by_number(db: Session, bin_number: int) -> Optional[database.Bin]:
     return db.exec(statement).first()
 
 def get_bins(db: Session, skip: int = 0, limit: int = 100) -> List[database.Bin]:
-    statement = select(database.Bin).offset(skip).limit(limit)
+    statement = select(database.Bin).offset(skip).limit(limit).order_by(database.Bin.number)
     return db.exec(statement).all()
 
 def create_bin(db: Session, bin: database.BinCreate) -> database.Bin:
@@ -56,7 +56,7 @@ def get_category_by_name(db: Session, category_name: str) -> Optional[database.C
     return db.exec(statement).first()
 
 def get_categories(db: Session, skip: int = 0, limit: int = 100) -> List[database.Category]:
-    statement = select(database.Category).offset(skip).limit(limit)
+    statement = select(database.Category).offset(skip).limit(limit).order_by(database.Category.name)
     return db.exec(statement).all()
 
 def create_category(db: Session, category: database.CategoryCreate) -> database.Category:
