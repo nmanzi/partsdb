@@ -138,7 +138,7 @@ async function loadParts() {
         
         // Apply current sort if any
         if (sortColumn) {
-            sortParts(sortColumn, sortDirection);
+            sortArray(currentParts, sortColumn, sortDirection, getPartValue);
         }
         
         renderParts();
@@ -188,48 +188,16 @@ function handleSort(column) {
         sortDirection = 'asc';
     }
     
-    sortParts(column, sortDirection);
+    sortArray(currentParts, column, sortDirection, getPartValue);
     renderParts();
     updateTableSortIndicators('#parts-table', sortColumn, sortDirection);
 }
 
-// Sort parts array
-function sortParts(column, direction) {
-    currentParts.sort((a, b) => {
-        let aVal, bVal;
-        
-        switch(column) {
-            case 'name':
-                aVal = a.name || '';
-                bVal = b.name || '';
-                break;
-            case 'quantity':
-                aVal = a.quantity || 0;
-                bVal = b.quantity || 0;
-                break;
-            case 'part_type':
-                aVal = a.part_type || '';
-                bVal = b.part_type || '';
-                break;
-            case 'specifications':
-                aVal = a.specifications || '';
-                bVal = b.specifications || '';
-                break;
-            case 'manufacturer':
-                aVal = a.manufacturer || '';
-                bVal = b.manufacturer || '';
-                break;
-            case 'model':
-                aVal = a.model || '';
-                bVal = b.model || '';
-                break;
-            case 'bin':
-                aVal = a.bin.number || 0;
-                bVal = b.bin.number || 0;
-                break;
-            default:
-                return 0;
-        }
+// Generic array sorting function
+function sortArray(array, column, direction, valueExtractor) {
+    array.sort((a, b) => {
+        const aVal = valueExtractor(a, column);
+        const bVal = valueExtractor(b, column);
         
         // Handle numeric vs string comparison
         if (typeof aVal === 'number' && typeof bVal === 'number') {
@@ -239,6 +207,42 @@ function sortParts(column, direction) {
             return direction === 'asc' ? comparison : -comparison;
         }
     });
+}
+
+// Extract value from part based on column
+function getPartValue(part, column) {
+    switch(column) {
+        case 'name':
+            return part.name || '';
+        case 'quantity':
+            return part.quantity || 0;
+        case 'part_type':
+            return part.part_type || '';
+        case 'specifications':
+            return part.specifications || '';
+        case 'manufacturer':
+            return part.manufacturer || '';
+        case 'model':
+            return part.model || '';
+        case 'bin':
+            return part.bin.number || 0;
+        default:
+            return '';
+    }
+}
+
+// Extract value from bin based on column
+function getBinValue(bin, column) {
+    switch(column) {
+        case 'number':
+            return bin.number || 0;
+        case 'location':
+            return bin.location || '';
+        case 'part_count':
+            return bin.part_count || 0;
+        default:
+            return '';
+    }
 }
 
 // Update table sort indicators in headers
@@ -285,7 +289,7 @@ async function loadBins() {
         
         // Apply current sort if any
         if (binsSortColumn) {
-            sortBins(binsSortColumn, binsSortDirection);
+            sortArray(currentBins, binsSortColumn, binsSortDirection, getBinValue);
         }
         
         renderBins();
@@ -324,41 +328,9 @@ function handleBinsSort(column) {
         binsSortDirection = 'asc';
     }
     
-    sortBins(column, binsSortDirection);
+    sortArray(currentBins, column, binsSortDirection, getBinValue);
     renderBins();
     updateTableSortIndicators('#bins-table', binsSortColumn, binsSortDirection);
-}
-
-// Sort bins array
-function sortBins(column, direction) {
-    currentBins.sort((a, b) => {
-        let aVal, bVal;
-        
-        switch(column) {
-            case 'number':
-                aVal = a.number || 0;
-                bVal = b.number || 0;
-                break;
-            case 'location':
-                aVal = a.location || '';
-                bVal = b.location || '';
-                break;
-            case 'part_count':
-                aVal = a.part_count || 0;
-                bVal = b.part_count || 0;
-                break;
-            default:
-                return 0;
-        }
-        
-        // Handle numeric vs string comparison
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-            return direction === 'asc' ? aVal - bVal : bVal - aVal;
-        } else {
-            const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
-            return direction === 'asc' ? comparison : -comparison;
-        }
-    });
 }
 
 // Load and display categories
