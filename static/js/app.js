@@ -1116,7 +1116,7 @@ function printBinLabels() {
             text-align: center;
         }
         .label-header {
-            font-size: 13pt;
+            font-size: 24pt;
             font-weight: 600;
             letter-spacing: 2pt;
             color: #555;
@@ -1124,7 +1124,7 @@ function printBinLabels() {
             margin-bottom: 1mm;
         }
         .label-number {
-            font-size: 52pt;
+            font-size: 92pt;
             font-weight: 800;
             color: #111;
             line-height: 1;
