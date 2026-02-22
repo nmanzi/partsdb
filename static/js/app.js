@@ -556,7 +556,7 @@ async function showBinForm(binId = null) {
             </div>
             <div class="form-group">
                 <label for="bin-size">Size</label>
-                <sub>e.g. "Small", "Medium", "Large"</sub>
+                <span class="form-help">e.g. "Small", "Medium", "Large"</span>
                 <input type="text" id="bin-size" value="${bin ? escapeHtml(bin.size || '') : ''}">
             </div>
             <div class="form-group">
