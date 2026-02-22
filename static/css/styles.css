@@ -382,11 +382,101 @@ nav {
     padding-bottom: 10px;
 }
 
-/* Grid Container */
+/* Grid Container (for bins and categories) */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+}
+
+/* Table Container */
+.table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px;
+    margin-top: 10px;
+    position: relative;
+}
+
+/* Data Table Styles */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 14px;
+}
+
+.data-table thead {
+    background: #3498db;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.data-table th {
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.data-table td {
+    padding: 10px 8px;
+    vertical-align: top;
+}
+
+.data-table .cell-name {
+    font-weight: 500;
+    color: #2c3e50;
+    min-width: 150px;
+}
+
+.data-table .cell-description,
+.data-table .cell-specs {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.data-table .cell-categories {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.data-table .cell-quantity {
+    text-align: center;
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.data-table .cell-actions {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.data-table .cell-actions button {
+    margin: 0 2px;
+}
+
+.data-table .loading,
+.data-table .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #7f8c8d;
+    font-style: italic;
 }
 
 /* Card Styles */

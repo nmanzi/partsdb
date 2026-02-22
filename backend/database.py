@@ -69,7 +69,6 @@ class CategoryRead(CategoryBase):
 
 class PartBase(SQLModel):
     name: str = Field(max_length=200, index=True)
-    description: Optional[str] = Field(default=None)
     quantity: int = Field(default=1)
     part_type: Optional[str] = Field(default=None, max_length=100)
     specifications: Optional[str] = Field(default=None)
@@ -93,7 +92,6 @@ class PartCreate(PartBase):
 
 class PartUpdate(SQLModel):
     name: Optional[str] = None
-    description: Optional[str] = None
     quantity: Optional[int] = None
     part_type: Optional[str] = None
     specifications: Optional[str] = None

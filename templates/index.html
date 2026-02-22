@@ -51,8 +51,25 @@
             <!-- Parts View -->
             <section id="parts-view" class="view active">
                 <h2>Parts Inventory</h2>
-                <div id="parts-list" class="grid-container">
-                    <!-- Parts will be loaded here -->
+                <div class="table-container">
+                    <table id="parts-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Qty</th>
+                                <th>Type</th>
+                                <th>Specifications</th>
+                                <th>Manufacturer</th>
+                                <th>Model</th>
+                                <th>Bin</th>
+                                <th>Categories</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parts-list">
+                            <!-- Parts will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
 

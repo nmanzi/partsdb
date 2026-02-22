@@ -97,8 +97,8 @@ function switchView(viewName) {
 // Load and display parts
 async function loadParts() {
     try {
-        const container = document.getElementById('parts-list');
-        container.innerHTML = '<div class="loading">Loading parts...</div>';
+        const tbody = document.getElementById('parts-list');
+        tbody.innerHTML = '<tr><td colspan="9" class="loading">Loading parts...</td></tr>';
         
         const searchParams = {
             ...currentFilters,
@@ -110,33 +110,36 @@ async function loadParts() {
         const parts = await API.getParts(searchParams);
         
         if (parts.length === 0) {
-            container.innerHTML = '<div class="empty-state">No parts found</div>';
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No parts found</td></tr>';
             return;
         }
         
-        container.innerHTML = parts.map(part => `
-            <div class="card">
-                <h3>${escapeHtml(part.name)}</h3>
-                <p><strong>Type:</strong> ${escapeHtml(part.part_type || 'N/A')}</p>
-                <p><strong>Description:</strong> ${escapeHtml(part.description || 'N/A')}</p>
-                <p><strong>Specifications:</strong> ${escapeHtml(part.specifications || 'N/A')}</p>
-                <p><strong>Manufacturer:</strong> ${escapeHtml(part.manufacturer || 'N/A')}</p>
-                <p><strong>Model:</strong> ${escapeHtml(part.model || 'N/A')}</p>
-                <p><strong>Bin:</strong> Bin ${part.bin.number} ${part.bin.name ? '(' + escapeHtml(part.bin.name) + ')' : ''}</p>
-                ${part.categories && part.categories.length > 0 ? `<p><strong>Categories:</strong> ${part.categories.map(cat => escapeHtml(cat.name)).join(', ')}</p>` : ''}
-                <div class="meta">
-                    <span class="quantity">Qty: ${part.quantity}</span>
-                    <span class="badge">ID: ${part.id}</span>
-                </div>
-                <div class="actions">
-                    <button class="btn-edit" onclick="editPart(${part.id})">Edit</button>
-                    <button class="btn-danger" onclick="deletePart(${part.id})">Delete</button>
-                </div>
-            </div>
-        `).join('');
+        tbody.innerHTML = parts.map(part => {
+            const binText = `${part.bin.number}`;
+            const categoriesText = part.categories && part.categories.length > 0 
+                ? part.categories.map(cat => escapeHtml(cat.name)).join(', ') 
+                : '-';
+            
+            return `
+                <tr>
+                    <td class="cell-name">${escapeHtml(part.name)}</td>
+                    <td class="cell-quantity">${part.quantity}</td>
+                    <td>${escapeHtml(part.part_type || '-')}</td>
+                    <td class="cell-specs">${escapeHtml(part.specifications || '-')}</td>
+                    <td>${escapeHtml(part.manufacturer || '-')}</td>
+                    <td>${escapeHtml(part.model || '-')}</td>
+                    <td>${binText}</td>
+                    <td class="cell-categories">${categoriesText}</td>
+                    <td class="cell-actions">
+                        <button class="btn-edit" onclick="editPart(${part.id})" title="Edit">Edit</button>
+                        <button class="btn-danger" onclick="deletePart(${part.id})" title="Delete">Delete</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     } catch (error) {
         document.getElementById('parts-list').innerHTML = 
-            `<div class="empty-state">Error loading parts: ${error.message}</div>`;
+            `<tr><td colspan="9" class="empty-state">Error loading parts: ${error.message}</td></tr>`;
     }
 }
 
@@ -291,10 +294,6 @@ async function showPartForm(partId = null) {
                 <div class="form-group">
                     <label for="part-name">Name *</label>
                     <input type="text" id="part-name" value="${part ? escapeHtml(part.name) : ''}" required>
-                </div>
-                <div class="form-group">
-                    <label for="part-description">Description</label>
-                    <textarea id="part-description">${part ? escapeHtml(part.description || '') : ''}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="part-type">Type</label>

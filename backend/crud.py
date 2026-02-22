@@ -113,7 +113,6 @@ def search_parts(db: Session, search_term: str, skip: int = 0, limit: int = 100)
         word_pattern = f"%{word}%"
         statement = statement.where(
             database.Part.name.ilike(word_pattern) |
-            database.Part.description.ilike(word_pattern) |
             database.Part.part_type.ilike(word_pattern) |
             database.Part.specifications.ilike(word_pattern) |
             database.Part.manufacturer.ilike(word_pattern) |
