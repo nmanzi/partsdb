@@ -29,7 +29,7 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 # API Routes - Bins
-@app.get("/api/bins", response_model=List[database.BinRead])
+@app.get("/api/bins", response_model=List[database.BinReadWithCount])
 def read_bins(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     bins = crud.get_bins(db, skip=skip, limit=limit)
     return bins

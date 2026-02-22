@@ -43,6 +43,9 @@ class BinRead(BinBase):
     id: int
     created_at: datetime
 
+class BinReadWithCount(BinRead):
+    part_count: int = 0
+
 class CategoryBase(SQLModel):
     name: str = Field(max_length=100, unique=True, index=True)
     description: Optional[str] = Field(default=None)

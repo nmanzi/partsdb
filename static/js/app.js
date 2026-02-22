@@ -273,15 +273,6 @@ async function loadBins() {
         
         currentBins = await API.getBins();
         
-        // Get all parts to calculate part counts per bin
-        const allParts = await API.getParts();
-        
-        // Calculate part count for each bin
-        currentBins = currentBins.map(bin => ({
-            ...bin,
-            part_count: allParts.filter(part => part.bin_id === bin.id).length
-        }));
-        
         if (currentBins.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No bins found</td></tr>';
             return;
