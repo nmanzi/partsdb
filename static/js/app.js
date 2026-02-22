@@ -190,7 +190,7 @@ function handleSort(column) {
     
     sortParts(column, sortDirection);
     renderParts();
-    updateSortIndicators();
+    updateTableSortIndicators('#parts-table', sortColumn, sortDirection);
 }
 
 // Sort parts array
@@ -241,42 +241,22 @@ function sortParts(column, direction) {
     });
 }
 
-// Update sort indicators in headers
-function updateSortIndicators() {
-    // Clear all indicators
-    document.querySelectorAll('#parts-table th.sortable').forEach(header => {
+// Update table sort indicators in headers
+function updateTableSortIndicators(tableSelector, column, direction) {
+    // Clear all indicators for this table
+    document.querySelectorAll(`${tableSelector} th.sortable`).forEach(header => {
         const indicator = header.querySelector('.sort-indicator');
         indicator.textContent = '';
         header.classList.remove('sorted-asc', 'sorted-desc');
     });
     
     // Add indicator to current sort column
-    if (sortColumn) {
-        const header = document.querySelector(`#parts-table th[data-sort="${sortColumn}"]`);
+    if (column) {
+        const header = document.querySelector(`${tableSelector} th[data-sort="${column}"]`);
         if (header) {
             const indicator = header.querySelector('.sort-indicator');
-            indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
-            header.classList.add(`sorted-${sortDirection}`);
-        }
-    }
-}
-
-// Update bins sort indicators in headers
-function updateBinsSortIndicators() {
-    // Clear all indicators
-    document.querySelectorAll('#bins-table th.sortable').forEach(header => {
-        const indicator = header.querySelector('.sort-indicator');
-        indicator.textContent = '';
-        header.classList.remove('sorted-asc', 'sorted-desc');
-    });
-    
-    // Add indicator to current sort column
-    if (binsSortColumn) {
-        const header = document.querySelector(`#bins-table th[data-sort="${binsSortColumn}"]`);
-        if (header) {
-            const indicator = header.querySelector('.sort-indicator');
-            indicator.textContent = binsSortDirection === 'asc' ? '▲' : '▼';
-            header.classList.add(`sorted-${binsSortDirection}`);
+            indicator.textContent = direction === 'asc' ? '▲' : '▼';
+            header.classList.add(`sorted-${direction}`);
         }
     }
 }
@@ -346,7 +326,7 @@ function handleBinsSort(column) {
     
     sortBins(column, binsSortDirection);
     renderBins();
-    updateBinsSortIndicators();
+    updateTableSortIndicators('#bins-table', binsSortColumn, binsSortDirection);
 }
 
 // Sort bins array
