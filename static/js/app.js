@@ -1078,12 +1078,7 @@ function printBinLabels() {
         </div>
     `).join('');
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        showFlashMessage('Could not open print window. Please allow popups for this site.', 'error');
-        return;
-    }
-    printWindow.document.write(`<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1144,6 +1139,15 @@ function printBinLabels() {
         window.onload = function() { window.print(); };
     </script>
 </body>
-</html>`);
-    printWindow.document.close();
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+    if (!printWindow) {
+        URL.revokeObjectURL(url);
+        showFlashMessage('Could not open print window. Please allow popups for this site.', 'error');
+        return;
+    }
+    printWindow.addEventListener('afterprint', () => URL.revokeObjectURL(url));
 }
