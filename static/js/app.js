@@ -313,7 +313,7 @@ function renderBins() {
                     : '0'
                 }
             </td>
-            <td class="cell-description">${escapeHtml(bin.size || '-')}</td>
+            <td class="cell-size">${escapeHtml(bin.size || '-')}</td>
             <td class="cell-actions">
                 <button class="btn-edit" onclick="editBin(${bin.id})" title="Edit">Edit</button>
                 <button class="btn-danger" onclick="deleteBin(${bin.id})" title="Delete">Delete</button>
