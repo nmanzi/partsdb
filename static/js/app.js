@@ -3,8 +3,11 @@ let currentView = 'parts';
 let currentSearch = '';
 let currentFilters = {};
 let currentParts = []; // Store loaded parts for sorting
+let currentBins = []; // Store loaded bins for sorting
 let sortColumn = null;
 let sortDirection = 'asc';
+let binsSortColumn = null;
+let binsSortDirection = 'asc';
 
 // DOM elements
 const viewButtons = document.querySelectorAll('.nav-btn');
@@ -50,11 +53,19 @@ function initializeEventListeners() {
     document.getElementById('export-csv').addEventListener('click', exportCSV);
     document.getElementById('csv-file-input').addEventListener('change', handleCSVImport);
 
-    // Table sorting
-    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+    // Table sorting - Parts
+    document.querySelectorAll('#parts-table th.sortable').forEach(header => {
         header.addEventListener('click', (e) => {
             const column = e.currentTarget.getAttribute('data-sort');
             handleSort(column);
+        });
+    });
+    
+    // Table sorting - Bins
+    document.querySelectorAll('#bins-table th.sortable').forEach(header => {
+        header.addEventListener('click', (e) => {
+            const column = e.currentTarget.getAttribute('data-sort');
+            handleBinsSort(column);
         });
     });
 
@@ -127,7 +138,7 @@ async function loadParts() {
         
         // Apply current sort if any
         if (sortColumn) {
-            sortParts(sortColumn, sortDirection);
+            sortArray(currentParts, sortColumn, sortDirection, getPartValue);
         }
         
         renderParts();
@@ -177,48 +188,16 @@ function handleSort(column) {
         sortDirection = 'asc';
     }
     
-    sortParts(column, sortDirection);
+    sortArray(currentParts, column, sortDirection, getPartValue);
     renderParts();
-    updateSortIndicators();
+    updateTableSortIndicators('#parts-table', sortColumn, sortDirection);
 }
 
-// Sort parts array
-function sortParts(column, direction) {
-    currentParts.sort((a, b) => {
-        let aVal, bVal;
-        
-        switch(column) {
-            case 'name':
-                aVal = a.name || '';
-                bVal = b.name || '';
-                break;
-            case 'quantity':
-                aVal = a.quantity || 0;
-                bVal = b.quantity || 0;
-                break;
-            case 'part_type':
-                aVal = a.part_type || '';
-                bVal = b.part_type || '';
-                break;
-            case 'specifications':
-                aVal = a.specifications || '';
-                bVal = b.specifications || '';
-                break;
-            case 'manufacturer':
-                aVal = a.manufacturer || '';
-                bVal = b.manufacturer || '';
-                break;
-            case 'model':
-                aVal = a.model || '';
-                bVal = b.model || '';
-                break;
-            case 'bin':
-                aVal = a.bin.number || 0;
-                bVal = b.bin.number || 0;
-                break;
-            default:
-                return 0;
-        }
+// Generic array sorting function
+function sortArray(array, column, direction, valueExtractor) {
+    array.sort((a, b) => {
+        const aVal = valueExtractor(a, column);
+        const bVal = valueExtractor(b, column);
         
         // Handle numeric vs string comparison
         if (typeof aVal === 'number' && typeof bVal === 'number') {
@@ -230,22 +209,58 @@ function sortParts(column, direction) {
     });
 }
 
-// Update sort indicators in headers
-function updateSortIndicators() {
-    // Clear all indicators
-    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+// Extract value from part based on column
+function getPartValue(part, column) {
+    switch(column) {
+        case 'name':
+            return part.name || '';
+        case 'quantity':
+            return part.quantity || 0;
+        case 'part_type':
+            return part.part_type || '';
+        case 'specifications':
+            return part.specifications || '';
+        case 'manufacturer':
+            return part.manufacturer || '';
+        case 'model':
+            return part.model || '';
+        case 'bin':
+            return part.bin.number || 0;
+        default:
+            return '';
+    }
+}
+
+// Extract value from bin based on column
+function getBinValue(bin, column) {
+    switch(column) {
+        case 'number':
+            return bin.number || 0;
+        case 'location':
+            return bin.location || '';
+        case 'part_count':
+            return bin.part_count || 0;
+        default:
+            return '';
+    }
+}
+
+// Update table sort indicators in headers
+function updateTableSortIndicators(tableSelector, column, direction) {
+    // Clear all indicators for this table
+    document.querySelectorAll(`${tableSelector} th.sortable`).forEach(header => {
         const indicator = header.querySelector('.sort-indicator');
         indicator.textContent = '';
         header.classList.remove('sorted-asc', 'sorted-desc');
     });
     
     // Add indicator to current sort column
-    if (sortColumn) {
-        const header = document.querySelector(`.data-table th[data-sort="${sortColumn}"]`);
+    if (column) {
+        const header = document.querySelector(`${tableSelector} th[data-sort="${column}"]`);
         if (header) {
             const indicator = header.querySelector('.sort-indicator');
-            indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
-            header.classList.add(`sorted-${sortDirection}`);
+            indicator.textContent = direction === 'asc' ? '▲' : '▼';
+            header.classList.add(`sorted-${direction}`);
         }
     }
 }
@@ -253,34 +268,72 @@ function updateSortIndicators() {
 // Load and display bins
 async function loadBins() {
     try {
-        const container = document.getElementById('bins-list');
-        container.innerHTML = '<div class="loading">Loading bins...</div>';
+        const tbody = document.getElementById('bins-list');
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading bins...</td></tr>';
         
-        const bins = await API.getBins();
+        currentBins = await API.getBins();
         
-        if (bins.length === 0) {
-            container.innerHTML = '<div class="empty-state">No bins found</div>';
+        if (currentBins.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No bins found</td></tr>';
             return;
         }
         
-        container.innerHTML = bins.map(bin => `
-            <div class="card">
-                <h3>Bin ${bin.number}</h3>
-                <p><strong>Description:</strong> ${escapeHtml(bin.description || 'N/A')}</p>
-                <p><strong>Location:</strong> ${escapeHtml(bin.location || 'N/A')}</p>
-                <div class="meta">
-                    <span class="badge">ID: ${bin.id}</span>
-                </div>
-                <div class="actions">
-                    <button class="btn-edit" onclick="editBin(${bin.id})">Edit</button>
-                    <button class="btn-danger" onclick="deleteBin(${bin.id})">Delete</button>
-                </div>
-            </div>
-        `).join('');
+        // Apply current sort if any
+        if (binsSortColumn) {
+            sortArray(currentBins, binsSortColumn, binsSortDirection, getBinValue);
+        }
+        
+        renderBins();
     } catch (error) {
         document.getElementById('bins-list').innerHTML = 
-            `<div class="empty-state">Error loading bins: ${error.message}</div>`;
+            `<tr><td colspan="5" class="empty-state">Error loading bins: ${error.message}</td></tr>`;
     }
+}
+
+// Render bins table
+function renderBins() {
+    const tbody = document.getElementById('bins-list');
+    
+    tbody.innerHTML = currentBins.map(bin => `
+        <tr>
+            <td class="cell-bin-number">${bin.number}</td>
+            <td>${escapeHtml(bin.location || '-')}</td>
+            <td class="cell-part-count">
+                ${bin.part_count > 0
+                    ? `<a class="part-count-link" href="#" onclick="filterPartsByBin(${bin.id}); return false;" title="View parts in Bin ${bin.number}">${bin.part_count}</a>`
+                    : '0'
+                }
+            </td>
+            <td class="cell-size">${escapeHtml(bin.size || '-')}</td>
+            <td class="cell-actions">
+                <button class="btn-edit" onclick="editBin(${bin.id})" title="Edit">Edit</button>
+                <button class="btn-danger" onclick="deleteBin(${bin.id})" title="Delete">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Navigate to the parts view filtered by a specific bin
+function filterPartsByBin(binId) {
+    document.getElementById('bin-filter').value = binId;
+    currentFilters = { bin_id: binId };
+    switchView('parts');
+}
+
+// Handle bins sorting
+function handleBinsSort(column) {
+    if (binsSortColumn === column) {
+        // Toggle direction if clicking same column
+        binsSortDirection = binsSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // New column, default to ascending
+        binsSortColumn = column;
+        binsSortDirection = 'asc';
+    }
+    
+    sortArray(currentBins, column, binsSortDirection, getBinValue);
+    renderBins();
+    updateTableSortIndicators('#bins-table', binsSortColumn, binsSortDirection);
 }
 
 // Load and display categories
@@ -493,8 +546,9 @@ async function showBinForm(binId = null) {
                 <input type="number" id="bin-number" value="${bin ? bin.number : ''}" required ${binId ? 'readonly' : ''}>
             </div>
             <div class="form-group">
-                <label for="bin-description">Description</label>
-                <textarea id="bin-description">${bin ? escapeHtml(bin.description || '') : ''}</textarea>
+                <label for="bin-size">Size</label>
+                <span class="form-help">e.g. "Small", "Medium", "Large"</span>
+                <input type="text" id="bin-size" value="${bin ? escapeHtml(bin.size || '') : ''}">
             </div>
             <div class="form-group">
                 <label for="bin-location">Location</label>
@@ -590,7 +644,7 @@ async function savePart(partId = null) {
 async function saveBin(binId = null) {
     try {
         const formData = {
-            description: document.getElementById('bin-description').value.trim() || null,
+            size: document.getElementById('bin-size').value.trim() || null,
             location: document.getElementById('bin-location').value.trim() || null,
         };
         

@@ -464,7 +464,7 @@ nav {
     min-width: 150px;
 }
 
-.data-table .cell-description,
+.data-table .cell-size,
 .data-table .cell-specs {
     max-width: 200px;
     overflow: hidden;
@@ -483,6 +483,28 @@ nav {
     text-align: center;
     font-weight: 600;
     color: #27ae60;
+}
+
+.data-table .cell-bin-number {
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.data-table .cell-part-count {
+    text-align: center;
+    font-weight: 600;
+    color: #3498db;
+}
+
+.data-table .cell-part-count .part-count-link {
+    color: #3498db;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.data-table .cell-part-count .part-count-link:hover {
+    color: #1a6ea8;
 }
 
 .data-table .cell-actions {
@@ -616,6 +638,13 @@ nav {
 .form-group textarea {
     height: 80px;
     resize: vertical;
+}
+
+.form-group .form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #7f8c8d;
 }
 
 .form-actions {

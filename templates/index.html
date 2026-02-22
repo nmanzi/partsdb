@@ -76,8 +76,21 @@
             <!-- Bins View -->
             <section id="bins-view" class="view">
                 <h2>Storage Bins</h2>
-                <div id="bins-list" class="grid-container">
-                    <!-- Bins will be loaded here -->
+                <div class="table-container">
+                    <table id="bins-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="number">Bin Number <span class="sort-indicator"></span></th>
+                                <th class="sortable" data-sort="location">Location <span class="sort-indicator"></span></th>
+                                <th class="sortable" data-sort="part_count">Parts Count <span class="sort-indicator"></span></th>
+                                <th>Size</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bins-list">
+                            <!-- Bins will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
 

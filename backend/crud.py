@@ -1,4 +1,5 @@
 from sqlmodel import Session, select
+from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime
 from . import database
@@ -19,9 +20,27 @@ def get_bin_by_number(db: Session, bin_number: int) -> Optional[database.Bin]:
     statement = select(database.Bin).where(database.Bin.number == bin_number)
     return db.exec(statement).first()
 
-def get_bins(db: Session, skip: int = 0, limit: int = 100) -> List[database.Bin]:
-    statement = select(database.Bin).offset(skip).limit(limit)
-    return db.exec(statement).all()
+def get_bins(db: Session, skip: int = 0, limit: int = 100) -> List[database.BinReadWithCount]:
+    statement = (
+        select(database.Bin, func.count(database.Part.id).label("part_count"))
+        .outerjoin(database.Part, database.Part.bin_id == database.Bin.id)
+        .group_by(database.Bin.id)
+        .order_by(database.Bin.number)
+        .offset(skip)
+        .limit(limit)
+    )
+    rows = db.exec(statement).all()
+    return [
+        database.BinReadWithCount(
+            id=b.id,
+            number=b.number,
+            size=b.size,
+            location=b.location,
+            created_at=b.created_at,
+            part_count=count,
+        )
+        for b, count in rows
+    ]
 
 def create_bin(db: Session, bin: database.BinCreate) -> database.Bin:
     db_bin = database.Bin.model_validate(bin)
@@ -56,7 +75,7 @@ def get_category_by_name(db: Session, category_name: str) -> Optional[database.C
     return db.exec(statement).first()
 
 def get_categories(db: Session, skip: int = 0, limit: int = 100) -> List[database.Category]:
-    statement = select(database.Category).offset(skip).limit(limit)
+    statement = select(database.Category).offset(skip).limit(limit).order_by(database.Category.name)
     return db.exec(statement).all()
 
 def create_category(db: Session, category: database.CategoryCreate) -> database.Category:
