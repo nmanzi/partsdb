@@ -644,7 +644,7 @@ async function savePart(partId = null) {
 async function saveBin(binId = null) {
     try {
         const formData = {
-            description: document.getElementById('bin-description').value.trim() || null,
+            size: document.getElementById('bin-size').value.trim() || null,
             location: document.getElementById('bin-location').value.trim() || null,
         };
         
