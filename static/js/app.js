@@ -307,7 +307,12 @@ function renderBins() {
         <tr>
             <td class="cell-bin-number">${bin.number}</td>
             <td>${escapeHtml(bin.location || '-')}</td>
-            <td class="cell-part-count">${bin.part_count}</td>
+            <td class="cell-part-count">
+                ${bin.part_count > 0
+                    ? `<a class="part-count-link" onclick="filterPartsByBin(${bin.id})" title="View parts in Bin ${bin.number}">${bin.part_count}</a>`
+                    : '0'
+                }
+            </td>
             <td class="cell-description">${escapeHtml(bin.size || '-')}</td>
             <td class="cell-actions">
                 <button class="btn-edit" onclick="editBin(${bin.id})" title="Edit">Edit</button>
@@ -315,6 +320,13 @@ function renderBins() {
             </td>
         </tr>
     `).join('');
+}
+
+// Navigate to the parts view filtered by a specific bin
+function filterPartsByBin(binId) {
+    document.getElementById('bin-filter').value = binId;
+    currentFilters = { bin_id: binId };
+    switchView('parts');
 }
 
 // Handle bins sorting

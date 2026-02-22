@@ -497,6 +497,16 @@ nav {
     color: #3498db;
 }
 
+.data-table .cell-part-count .part-count-link {
+    color: #3498db;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.data-table .cell-part-count .part-count-link:hover {
+    color: #1a6ea8;
+}
+
 .data-table .cell-actions {
     white-space: nowrap;
     text-align: center;
