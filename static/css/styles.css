@@ -362,6 +362,29 @@ nav {
     background: #e67e22;
 }
 
+.btn-print {
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+/* Section header with title and actions */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.section-header h2 {
+    color: #2c3e50;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
 /* View Styles */
 .view {
     display: none;

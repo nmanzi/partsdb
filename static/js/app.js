@@ -307,6 +307,7 @@ function renderBins() {
             <td class="cell-size">${escapeHtml(bin.size || '-')}</td>
             <td class="cell-actions">
                 <button class="btn-edit" onclick="editBin(${bin.id})" title="Edit">Edit</button>
+                <button class="btn-secondary btn-print" onclick="printSingleBinLabel(${bin.id})" title="Print Label">Print</button>
                 <button class="btn-danger" onclick="deleteBin(${bin.id})" title="Delete">Delete</button>
             </td>
         </tr>
@@ -1007,4 +1008,112 @@ function updateCategoriesDisplay() {
         : 'Select categories...';
     
     document.getElementById('categories-text').textContent = displayText;
+}
+
+// Bin label printing functions
+function printSingleBinLabel(binId) {
+    const bin = currentBins.find(b => b.id === binId);
+    if (bin) {
+        printBinLabels([bin]);
+    }
+}
+
+function printBinLabels(bins = null) {
+    const binsToPrint = bins || currentBins;
+    if (binsToPrint.length === 0) {
+        showFlashMessage('No bins to print labels for.', 'warning');
+        return;
+    }
+
+    const labelsHtml = binsToPrint.map(bin => `
+        <div class="bin-label">
+            <div class="label-header">BIN</div>
+            <div class="label-number">${bin.number}</div>
+            ${bin.location ? `<div class="label-detail">${escapeHtml(bin.location)}</div>` : ''}
+            ${bin.size ? `<div class="label-size">${escapeHtml(bin.size)}</div>` : ''}
+        </div>
+    `).join('');
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showFlashMessage('Could not open print window. Please allow popups for this site.', 'error');
+        return;
+    }
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bin Labels</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 13mm 9.5mm;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+        }
+        .labels-grid {
+            display: grid;
+            grid-template-columns: 95.5mm 95.5mm;
+            grid-auto-rows: 65mm;
+            gap: 0;
+        }
+        .bin-label {
+            width: 95.5mm;
+            height: 65mm;
+            border: 0.5pt dashed #aaa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4mm 6mm;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+        .label-header {
+            font-size: 13pt;
+            font-weight: 600;
+            letter-spacing: 2pt;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 1mm;
+        }
+        .label-number {
+            font-size: 52pt;
+            font-weight: 800;
+            color: #111;
+            line-height: 1;
+        }
+        .label-detail {
+            font-size: 13pt;
+            color: #333;
+            margin-top: 2mm;
+            max-width: 85mm;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .label-size {
+            font-size: 11pt;
+            color: #666;
+            margin-top: 1mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="labels-grid">
+        ${labelsHtml}
+    </div>
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>`);
+    printWindow.document.close();
 }
