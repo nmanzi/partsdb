@@ -309,7 +309,7 @@ function renderBins() {
             <td>${escapeHtml(bin.location || '-')}</td>
             <td class="cell-part-count">
                 ${bin.part_count > 0
-                    ? `<a class="part-count-link" onclick="filterPartsByBin(${bin.id})" title="View parts in Bin ${bin.number}">${bin.part_count}</a>`
+                    ? `<a class="part-count-link" href="#" onclick="filterPartsByBin(${bin.id}); return false;" title="View parts in Bin ${bin.number}">${bin.part_count}</a>`
                     : '0'
                 }
             </td>
