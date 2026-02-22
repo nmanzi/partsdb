@@ -1075,8 +1075,6 @@ function printBinLabels() {
         <div class="bin-label">
             <div class="label-header">BIN</div>
             <div class="label-number">${bin.number}</div>
-            ${bin.location ? `<div class="label-detail">${escapeHtml(bin.location)}</div>` : ''}
-            ${bin.size ? `<div class="label-size">${escapeHtml(bin.size)}</div>` : ''}
         </div>
     `).join('');
 
@@ -1135,20 +1133,6 @@ function printBinLabels() {
             font-weight: 800;
             color: #111;
             line-height: 1;
-        }
-        .label-detail {
-            font-size: 13pt;
-            color: #333;
-            margin-top: 2mm;
-            max-width: 85mm;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .label-size {
-            font-size: 11pt;
-            color: #666;
-            margin-top: 1mm;
         }
     </style>
 </head>
