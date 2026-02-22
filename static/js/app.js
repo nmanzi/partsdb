@@ -8,6 +8,7 @@ let sortColumn = null;
 let sortDirection = 'asc';
 let binsSortColumn = null;
 let binsSortDirection = 'asc';
+let selectedBinIds = new Set(); // Track selected bins for label printing
 
 // DOM elements
 const viewButtons = document.querySelectorAll('.nav-btn');
@@ -269,12 +270,14 @@ function updateTableSortIndicators(tableSelector, column, direction) {
 async function loadBins() {
     try {
         const tbody = document.getElementById('bins-list');
-        tbody.innerHTML = '<tr><td colspan="5" class="loading">Loading bins...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading bins...</td></tr>';
         
         currentBins = await API.getBins();
+        selectedBinIds.clear();
         
         if (currentBins.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No bins found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No bins found</td></tr>';
+            updatePrintLabelsButton();
             return;
         }
         
@@ -286,7 +289,7 @@ async function loadBins() {
         renderBins();
     } catch (error) {
         document.getElementById('bins-list').innerHTML = 
-            `<tr><td colspan="5" class="empty-state">Error loading bins: ${error.message}</td></tr>`;
+            `<tr><td colspan="6" class="empty-state">Error loading bins: ${error.message}</td></tr>`;
     }
 }
 
@@ -295,7 +298,12 @@ function renderBins() {
     const tbody = document.getElementById('bins-list');
     
     tbody.innerHTML = currentBins.map(bin => `
-        <tr>
+        <tr class="${selectedBinIds.has(bin.id) ? 'row-selected' : ''}">
+            <td class="col-select">
+                <input type="checkbox" class="bin-select" value="${bin.id}"
+                    ${selectedBinIds.has(bin.id) ? 'checked' : ''}
+                    onchange="toggleBinSelection(${bin.id}, this.checked)">
+            </td>
             <td class="cell-bin-number">${bin.number}</td>
             <td>${escapeHtml(bin.location || '-')}</td>
             <td class="cell-part-count">
@@ -311,6 +319,8 @@ function renderBins() {
             </td>
         </tr>
     `).join('');
+    
+    updatePrintLabelsButton();
 }
 
 // Navigate to the parts view filtered by a specific bin
@@ -1007,4 +1017,137 @@ function updateCategoriesDisplay() {
         : 'Select categories...';
     
     document.getElementById('categories-text').textContent = displayText;
+}
+
+// Bin label printing functions
+function toggleBinSelection(binId, checked) {
+    if (checked) {
+        selectedBinIds.add(binId);
+    } else {
+        selectedBinIds.delete(binId);
+    }
+    // Update row highlight
+    const checkbox = Array.from(document.querySelectorAll('.bin-select')).find(cb => parseInt(cb.value) === binId);
+    if (checkbox) {
+        checkbox.closest('tr').classList.toggle('row-selected', checked);
+    }
+    // Sync select-all checkbox state
+    const selectAll = document.getElementById('select-all-bins');
+    if (selectAll) {
+        selectAll.checked = currentBins.length > 0 && selectedBinIds.size === currentBins.length;
+        selectAll.indeterminate = selectedBinIds.size > 0 && selectedBinIds.size < currentBins.length;
+    }
+    updatePrintLabelsButton();
+}
+
+function toggleSelectAllBins(checked) {
+    currentBins.forEach(bin => {
+        if (checked) {
+            selectedBinIds.add(bin.id);
+        } else {
+            selectedBinIds.delete(bin.id);
+        }
+    });
+    renderBins();
+}
+
+function updatePrintLabelsButton() {
+    const btn = document.getElementById('print-labels');
+    if (!btn) return;
+    if (selectedBinIds.size > 0) {
+        btn.textContent = `Print Labels (${selectedBinIds.size})`;
+    } else {
+        btn.textContent = 'Print Labels';
+    }
+}
+
+function printBinLabels() {
+    const binsToPrint = selectedBinIds.size > 0
+        ? currentBins.filter(b => selectedBinIds.has(b.id))
+        : currentBins;
+
+    if (binsToPrint.length === 0) {
+        showFlashMessage('No bins to print labels for.', 'warning');
+        return;
+    }
+
+    const labelsHtml = binsToPrint.map(bin => `
+        <div class="bin-label">
+            <div class="label-header">BIN</div>
+            <div class="label-number">${bin.number}</div>
+        </div>
+    `).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bin Labels</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 13mm 9.5mm;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+        }
+        .labels-grid {
+            display: grid;
+            grid-template-columns: 95.5mm 95.5mm;
+            grid-auto-rows: 65mm;
+            gap: 0;
+        }
+        .bin-label {
+            width: 95.5mm;
+            height: 65mm;
+            border: 0.5pt dashed #aaa;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4mm 6mm;
+            page-break-inside: avoid;
+            text-align: center;
+        }
+        .label-header {
+            font-size: 24pt;
+            font-weight: 600;
+            letter-spacing: 2pt;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 1mm;
+        }
+        .label-number {
+            font-size: 92pt;
+            font-weight: 800;
+            color: #111;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="labels-grid">
+        ${labelsHtml}
+    </div>
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+    if (!printWindow) {
+        URL.revokeObjectURL(url);
+        showFlashMessage('Could not open print window. Please allow popups for this site.', 'error');
+        return;
+    }
+    printWindow.addEventListener('afterprint', () => URL.revokeObjectURL(url));
 }

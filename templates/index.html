@@ -75,11 +75,15 @@
 
             <!-- Bins View -->
             <section id="bins-view" class="view">
-                <h2>Storage Bins</h2>
+                <div class="section-header">
+                    <h2>Storage Bins</h2>
+                    <button id="print-labels" class="btn-secondary" onclick="printBinLabels()">Print Labels</button>
+                </div>
                 <div class="table-container">
                     <table id="bins-table" class="data-table">
                         <thead>
                             <tr>
+                                <th class="col-select"><input type="checkbox" id="select-all-bins" title="Select all bins" onchange="toggleSelectAllBins(this.checked)"></th>
                                 <th class="sortable" data-sort="number">Bin Number <span class="sort-indicator"></span></th>
                                 <th class="sortable" data-sort="location">Location <span class="sort-indicator"></span></th>
                                 <th class="sortable" data-sort="part_count">Parts Count <span class="sort-indicator"></span></th>

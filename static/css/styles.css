@@ -362,6 +362,24 @@ nav {
     background: #e67e22;
 }
 
+.btn-print {
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+/* Bins table checkbox column */
+.data-table th.col-select,
+.data-table td.col-select {
+    width: 36px;
+    text-align: center;
+    padding: 10px 4px;
+}
+
+.data-table tbody tr.row-selected {
+    background-color: #e8f4fd;
+}
+
 /* View Styles */
 .view {
     display: none;
@@ -380,6 +398,23 @@ nav {
     margin-bottom: 20px;
     border-bottom: 2px solid #3498db;
     padding-bottom: 10px;
+}
+
+/* Section header with title and actions */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.section-header h2 {
+    color: #2c3e50;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 /* Grid Container (for bins and categories) */
