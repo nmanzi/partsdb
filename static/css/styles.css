@@ -368,6 +368,18 @@ nav {
     margin-right: 5px;
 }
 
+/* Bins table checkbox column */
+.data-table th.col-select,
+.data-table td.col-select {
+    width: 36px;
+    text-align: center;
+    padding: 10px 4px;
+}
+
+.data-table tbody tr.row-selected {
+    background-color: #e8f4fd;
+}
+
 /* View Styles */
 .view {
     display: none;
