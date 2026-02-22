@@ -421,6 +421,29 @@ nav {
     white-space: nowrap;
 }
 
+.data-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.data-table th.sortable:hover {
+    background-color: #2980b9;
+}
+
+.data-table th.sortable .sort-indicator {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.data-table th.sorted-asc .sort-indicator,
+.data-table th.sorted-desc .sort-indicator {
+    opacity: 1;
+    font-weight: bold;
+}
+
 .data-table tbody tr {
     border-bottom: 1px solid #e9ecef;
     transition: background-color 0.2s ease;

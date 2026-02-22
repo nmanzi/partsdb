@@ -2,6 +2,9 @@
 let currentView = 'parts';
 let currentSearch = '';
 let currentFilters = {};
+let currentParts = []; // Store loaded parts for sorting
+let sortColumn = null;
+let sortDirection = 'asc';
 
 // DOM elements
 const viewButtons = document.querySelectorAll('.nav-btn');
@@ -46,6 +49,14 @@ function initializeEventListeners() {
     document.getElementById('import-csv').addEventListener('click', triggerCSVImport);
     document.getElementById('export-csv').addEventListener('click', exportCSV);
     document.getElementById('csv-file-input').addEventListener('change', handleCSVImport);
+
+    // Table sorting
+    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+        header.addEventListener('click', (e) => {
+            const column = e.currentTarget.getAttribute('data-sort');
+            handleSort(column);
+        });
+    });
 
     // Modal
     closeModal.addEventListener('click', hideModal);
@@ -107,39 +118,135 @@ async function loadParts() {
         
         console.log('Loading parts with params:', searchParams); // Debug log
         
-        const parts = await API.getParts(searchParams);
+        currentParts = await API.getParts(searchParams);
         
-        if (parts.length === 0) {
+        if (currentParts.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No parts found</td></tr>';
             return;
         }
         
-        tbody.innerHTML = parts.map(part => {
-            const binText = `${part.bin.number}`;
-            const categoriesText = part.categories && part.categories.length > 0 
-                ? part.categories.map(cat => escapeHtml(cat.name)).join(', ') 
-                : '-';
-            
-            return `
-                <tr>
-                    <td class="cell-name">${escapeHtml(part.name)}</td>
-                    <td class="cell-quantity">${part.quantity}</td>
-                    <td>${escapeHtml(part.part_type || '-')}</td>
-                    <td class="cell-specs">${escapeHtml(part.specifications || '-')}</td>
-                    <td>${escapeHtml(part.manufacturer || '-')}</td>
-                    <td>${escapeHtml(part.model || '-')}</td>
-                    <td>${binText}</td>
-                    <td class="cell-categories">${categoriesText}</td>
-                    <td class="cell-actions">
-                        <button class="btn-edit" onclick="editPart(${part.id})" title="Edit">Edit</button>
-                        <button class="btn-danger" onclick="deletePart(${part.id})" title="Delete">Delete</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        // Apply current sort if any
+        if (sortColumn) {
+            sortParts(sortColumn, sortDirection);
+        }
+        
+        renderParts();
     } catch (error) {
         document.getElementById('parts-list').innerHTML = 
             `<tr><td colspan="9" class="empty-state">Error loading parts: ${error.message}</td></tr>`;
+    }
+}
+
+// Render parts table
+function renderParts() {
+    const tbody = document.getElementById('parts-list');
+    
+    tbody.innerHTML = currentParts.map(part => {
+        const binText = `${part.bin.number}`;
+        const categoriesText = part.categories && part.categories.length > 0 
+            ? part.categories.map(cat => escapeHtml(cat.name)).join(', ') 
+            : '-';
+        
+        return `
+            <tr>
+                <td class="cell-name">${escapeHtml(part.name)}</td>
+                <td class="cell-quantity">${part.quantity}</td>
+                <td>${escapeHtml(part.part_type || '-')}</td>
+                <td class="cell-specs">${escapeHtml(part.specifications || '-')}</td>
+                <td>${escapeHtml(part.manufacturer || '-')}</td>
+                <td>${escapeHtml(part.model || '-')}</td>
+                <td>${binText}</td>
+                <td class="cell-categories">${categoriesText}</td>
+                <td class="cell-actions">
+                    <button class="btn-edit" onclick="editPart(${part.id})" title="Edit">Edit</button>
+                    <button class="btn-danger" onclick="deletePart(${part.id})" title="Delete">Delete</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Handle sorting
+function handleSort(column) {
+    if (sortColumn === column) {
+        // Toggle direction if clicking same column
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // New column, default to ascending
+        sortColumn = column;
+        sortDirection = 'asc';
+    }
+    
+    sortParts(column, sortDirection);
+    renderParts();
+    updateSortIndicators();
+}
+
+// Sort parts array
+function sortParts(column, direction) {
+    currentParts.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(column) {
+            case 'name':
+                aVal = a.name || '';
+                bVal = b.name || '';
+                break;
+            case 'quantity':
+                aVal = a.quantity || 0;
+                bVal = b.quantity || 0;
+                break;
+            case 'part_type':
+                aVal = a.part_type || '';
+                bVal = b.part_type || '';
+                break;
+            case 'specifications':
+                aVal = a.specifications || '';
+                bVal = b.specifications || '';
+                break;
+            case 'manufacturer':
+                aVal = a.manufacturer || '';
+                bVal = b.manufacturer || '';
+                break;
+            case 'model':
+                aVal = a.model || '';
+                bVal = b.model || '';
+                break;
+            case 'bin':
+                aVal = a.bin.number || 0;
+                bVal = b.bin.number || 0;
+                break;
+            default:
+                return 0;
+        }
+        
+        // Handle numeric vs string comparison
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+            return direction === 'asc' ? aVal - bVal : bVal - aVal;
+        } else {
+            const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
+            return direction === 'asc' ? comparison : -comparison;
+        }
+    });
+}
+
+// Update sort indicators in headers
+function updateSortIndicators() {
+    // Clear all indicators
+    document.querySelectorAll('.data-table th.sortable').forEach(header => {
+        const indicator = header.querySelector('.sort-indicator');
+        indicator.textContent = '';
+        header.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    
+    // Add indicator to current sort column
+    if (sortColumn) {
+        const header = document.querySelector(`.data-table th[data-sort="${sortColumn}"]`);
+        if (header) {
+            const indicator = header.querySelector('.sort-indicator');
+            indicator.textContent = sortDirection === 'asc' ? '▲' : '▼';
+            header.classList.add(`sorted-${sortDirection}`);
+        }
     }
 }
 
