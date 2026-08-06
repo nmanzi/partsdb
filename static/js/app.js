@@ -625,7 +625,6 @@ async function savePart(partId = null) {
         
         const formData = {
             name: document.getElementById('part-name').value.trim(),
-            description: document.getElementById('part-description').value.trim() || null,
             part_type: document.getElementById('part-type').value.trim() || null,
             specifications: document.getElementById('part-specifications').value.trim() || null,
             manufacturer: document.getElementById('part-manufacturer').value.trim() || null,
