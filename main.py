@@ -26,7 +26,7 @@ def get_db():
 # Frontend routes
 @app.get("/")
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 # API Routes - Bins
 @app.get("/api/bins", response_model=List[database.BinReadWithCount])
